@@ -1,0 +1,934 @@
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[16:52:51] 
+[16:52:51] Server Plugins
+[16:52:51] --------------
+[16:52:51]  Loading plugin: sscanf
+[16:52:51]   Failed.
+[16:52:51]  Loading plugin: jit
+[16:52:51]   Failed.
+[16:52:51]  Loading plugin: streamer
+[16:52:51]   Failed.
+[16:52:51]  Loaded 0 plugins.
+
+[16:52:51] I couldn't load any gamemode scripts. Please verify your server.cfg
+[16:52:51] It needs a gamemode0 line at the very least.
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[16:52:57] 
+[16:52:57] Server Plugins
+[16:52:57] --------------
+[16:52:57]  Loading plugin: sscanf
+[16:52:57]   Failed.
+[16:52:57]  Loading plugin: jit
+[16:52:57]   Failed.
+[16:52:57]  Loading plugin: streamer
+[16:52:57]   Failed.
+[16:52:57]  Loaded 0 plugins.
+
+[16:52:57] I couldn't load any gamemode scripts. Please verify your server.cfg
+[16:52:57] It needs a gamemode0 line at the very least.
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[16:57:32] 
+[16:57:32] Server Plugins
+[16:57:32] --------------
+[16:57:32]  Loading plugin: sscanf
+[16:57:32] 
+
+[16:57:32]  ===============================
+
+[16:57:32]       sscanf plugin loaded.     
+
+[16:57:32]          Version:  2.8.2        
+
+[16:57:32]    (c) 2012 Alex "Y_Less" Cole  
+
+[16:57:32]  ===============================
+
+[16:57:32]   Loaded.
+[16:57:32]  Loading plugin: jit
+[16:57:32]   JIT plugin 2.2
+[16:57:32]   Loaded.
+[16:57:32]  Loading plugin: streamer
+[16:57:32] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[16:57:32]   Loaded.
+[16:57:32]  Loaded 3 plugins.
+
+[16:57:32] 
+[16:57:32] Filterscripts
+[16:57:32] ---------------
+[16:57:32]   Loading filterscript 'Anims.amx'...
+[16:57:32]   Unable to load filterscript 'Anims.amx'.
+[16:57:32]   Loading filterscript 'inter.amx'...
+[16:57:32]   Unable to load filterscript 'inter.amx'.
+[16:57:32]   Loading filterscript 'ctuningv22.amx'...
+[16:57:32]   Unable to load filterscript 'ctuningv22.amx'.
+[16:57:32]   Loaded 0 filterscripts.
+
+[16:57:32] Number of vehicle models: 23
+[16:57:33] [connection] incoming connection: 127.0.0.1:64955 id: 0
+[16:57:34] [npc:join] TrainDriverLV has joined the server (0:127.0.0.1)
+[16:57:57] [connection] incoming connection: 127.0.0.1:64958 id: 1
+[16:57:57] [join] MeDBeD has joined the server (1:127.0.0.1)
+[16:58:13] [part] MeDBeD has left the server (1:1)
+[17:09:13] [connection] incoming connection: 127.0.0.1:50020 id: 1
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[17:10:45] 
+[17:10:45] Server Plugins
+[17:10:45] --------------
+[17:10:45]  Loading plugin: sscanf
+[17:10:45] 
+
+[17:10:45]  ===============================
+
+[17:10:45]       sscanf plugin loaded.     
+
+[17:10:45]          Version:  2.8.2        
+
+[17:10:45]    (c) 2012 Alex "Y_Less" Cole  
+
+[17:10:45]  ===============================
+
+[17:10:45]   Loaded.
+[17:10:45]  Loading plugin: jit
+[17:10:45]   JIT plugin 2.2
+[17:10:45]   Loaded.
+[17:10:45]  Loading plugin: streamer
+[17:10:45] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[17:10:45]   Loaded.
+[17:10:45]  Loaded 3 plugins.
+
+[17:10:45] 
+[17:10:45] Filterscripts
+[17:10:45] ---------------
+[17:10:45]   Loading filterscript 'Anims.amx'...
+[17:10:45]   Unable to load filterscript 'Anims.amx'.
+[17:10:45]   Loading filterscript 'inter.amx'...
+[17:10:45]   Unable to load filterscript 'inter.amx'.
+[17:10:45]   Loading filterscript 'ctuningv22.amx'...
+[17:10:45]   Unable to load filterscript 'ctuningv22.amx'.
+[17:10:45]   Loaded 0 filterscripts.
+
+[17:10:45] Number of vehicle models: 23
+[17:10:46] [connection] incoming connection: 127.0.0.1:61080 id: 0
+[17:10:46] [npc:join] TrainDriverLV has joined the server (0:127.0.0.1)
+[17:11:07] [connection] incoming connection: 127.0.0.1:61082 id: 1
+[17:11:07] [join] MeDBeD has joined the server (1:127.0.0.1)
+[17:11:16] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[17:14:07] Number of vehicle models: 23
+[17:14:08] [connection] incoming connection: 127.0.0.1:49934 id: 1
+[17:14:15] [connection] incoming connection: 127.0.0.1:61883 id: 1
+[17:14:15] [join] MeDBeD has joined the server (1:127.0.0.1)
+[17:14:39] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[17:15:43] Number of vehicle models: 23
+[17:15:44] [connection] incoming connection: 127.0.0.1:49614 id: 1
+[17:15:53] [connection] incoming connection: 127.0.0.1:49618 id: 1
+[17:15:54] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[17:17:24] Number of vehicle models: 23
+[17:17:25] [connection] incoming connection: 127.0.0.1:55597 id: 2
+[17:18:09] [part] MeDBeD has left the server (1:1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[17:18:11] 
+[17:18:11] Server Plugins
+[17:18:11] --------------
+[17:18:11]  Loading plugin: sscanf
+[17:18:11] 
+
+[17:18:11]  ===============================
+
+[17:18:11]       sscanf plugin loaded.     
+
+[17:18:11]          Version:  2.8.2        
+
+[17:18:11]    (c) 2012 Alex "Y_Less" Cole  
+
+[17:18:11]  ===============================
+
+[17:18:11]   Loaded.
+[17:18:11]  Loading plugin: jit
+[17:18:11]   JIT plugin 2.2
+[17:18:11]   Loaded.
+[17:18:11]  Loading plugin: streamer
+[17:18:12] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[17:18:12]   Loaded.
+[17:18:12]  Loaded 3 plugins.
+
+[17:18:12] 
+[17:18:12] Filterscripts
+[17:18:12] ---------------
+[17:18:12]   Loading filterscript 'Anims.amx'...
+[17:18:12]   Unable to load filterscript 'Anims.amx'.
+[17:18:12]   Loading filterscript 'inter.amx'...
+[17:18:12]   Unable to load filterscript 'inter.amx'.
+[17:18:12]   Loading filterscript 'ctuningv22.amx'...
+[17:18:12]   Unable to load filterscript 'ctuningv22.amx'.
+[17:18:12]   Loaded 0 filterscripts.
+
+[17:18:12] Number of vehicle models: 23
+[17:18:13] [connection] incoming connection: 127.0.0.1:62883 id: 0
+[17:18:13] [npc:join] TrainDriverLV has joined the server (0:127.0.0.1)
+[17:18:49] [connection] incoming connection: 127.0.0.1:54547 id: 1
+[17:18:49] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[17:19:48] Number of vehicle models: 23
+[17:19:49] [connection] incoming connection: 127.0.0.1:57883 id: 2
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[17:20:31] 
+[17:20:31] Server Plugins
+[17:20:31] --------------
+[17:20:31]  Loading plugin: sscanf
+[17:20:31] 
+
+[17:20:31]  ===============================
+
+[17:20:31]       sscanf plugin loaded.     
+
+[17:20:31]          Version:  2.8.2        
+
+[17:20:31]    (c) 2012 Alex "Y_Less" Cole  
+
+[17:20:31]  ===============================
+
+[17:20:31]   Loaded.
+[17:20:31]  Loading plugin: jit
+[17:20:31]   JIT plugin 2.2
+[17:20:31]   Loaded.
+[17:20:31]  Loading plugin: streamer
+[17:20:31] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[17:20:31]   Loaded.
+[17:20:31]  Loaded 3 plugins.
+
+[17:20:31] 
+[17:20:31] Filterscripts
+[17:20:31] ---------------
+[17:20:31]   Loading filterscript 'Anims.amx'...
+[17:20:31]   Unable to load filterscript 'Anims.amx'.
+[17:20:31]   Loading filterscript 'inter.amx'...
+[17:20:31]   Unable to load filterscript 'inter.amx'.
+[17:20:31]   Loading filterscript 'ctuningv22.amx'...
+[17:20:31]   Unable to load filterscript 'ctuningv22.amx'.
+[17:20:31]   Loaded 0 filterscripts.
+
+[17:20:31] Number of vehicle models: 23
+[17:20:32] [connection] incoming connection: 127.0.0.1:57892 id: 0
+[17:20:33] [npc:join] TrainDriverLV has joined the server (0:127.0.0.1)
+[17:20:33] [connection] incoming connection: 127.0.0.1:57893 id: 1
+[17:20:33] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[17:50:11] Number of vehicle models: 23
+[17:50:12] [connection] incoming connection: 127.0.0.1:61149 id: 2
+[17:50:22] [part] MeDBeD has left the server (1:0)
+[17:51:16] [connection] incoming connection: 127.0.0.1:49550 id: 1
+[17:51:16] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[17:58:27] Number of vehicle models: 23
+[17:58:28] [connection] incoming connection: 127.0.0.1:63334 id: 2
+[17:59:01] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[17:59:16] Number of vehicle models: 23
+[17:59:17] [connection] incoming connection: 127.0.0.1:52114 id: 1
+[17:59:23] [connection] incoming connection: 127.0.0.1:52117 id: 1
+[17:59:24] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[18:01:11] Number of vehicle models: 23
+[18:01:12] [connection] incoming connection: 127.0.0.1:58843 id: 2
+Console input: gmx
+[18:02:45] Number of vehicle models: 23
+[18:02:46] [connection] incoming connection: 127.0.0.1:49483 id: 2
+Console input: gmx
+[18:10:24] [part] MeDBeD has left the server (1:1)
+[18:10:35] Number of vehicle models: 23
+[18:10:36] [connection] incoming connection: 127.0.0.1:61388 id: 1
+[18:10:44] [connection] incoming connection: 127.0.0.1:61389 id: 1
+[18:10:44] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[18:12:12] Number of vehicle models: 23
+[18:12:13] [connection] incoming connection: 127.0.0.1:56342 id: 2
+Console input: gmx
+[18:16:43] Number of vehicle models: 23
+[18:16:44] [connection] incoming connection: 127.0.0.1:52180 id: 2
+Console input: gmx
+[18:18:47] Number of vehicle models: 23
+[18:18:48] [connection] incoming connection: 127.0.0.1:59731 id: 2
+[18:18:58] [part] MeDBeD has left the server (1:0)
+[18:19:14] [connection] incoming connection: 127.0.0.1:59734 id: 1
+[18:19:14] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[18:33:00] [part] MeDBeD has left the server (1:1)
+[18:33:11] Number of vehicle models: 23
+[18:33:12] [connection] incoming connection: 127.0.0.1:64212 id: 1
+[18:33:20] [connection] incoming connection: 127.0.0.1:64214 id: 1
+[18:33:20] [join] MeDBeD has joined the server (1:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[19:43:52] 
+[19:43:52] Server Plugins
+[19:43:52] --------------
+[19:43:52]  Loading plugin: sscanf
+[19:43:52] 
+
+[19:43:52]  ===============================
+
+[19:43:52]       sscanf plugin loaded.     
+
+[19:43:52]          Version:  2.8.2        
+
+[19:43:52]    (c) 2012 Alex "Y_Less" Cole  
+
+[19:43:52]  ===============================
+
+[19:43:52]   Loaded.
+[19:43:52]  Loading plugin: jit
+[19:43:52]   JIT plugin 2.2
+[19:43:52]   Loaded.
+[19:43:52]  Loading plugin: streamer
+[19:43:52] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[19:43:52]   Loaded.
+[19:43:52]  Loaded 3 plugins.
+
+[19:43:52] 
+[19:43:52] Filterscripts
+[19:43:52] ---------------
+[19:43:52]   Loading filterscript 'Anims.amx'...
+[19:43:52]   Loading filterscript 'inter.amx'...
+[19:43:52]   Loading filterscript 'ctuningv22.amx'...
+[19:43:52]   Loaded 3 filterscripts.
+
+[19:43:52] Number of vehicle models: 23
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[20:27:58] 
+[20:27:58] Server Plugins
+[20:27:58] --------------
+[20:27:58]  Loading plugin: sscanf
+[20:27:58] 
+
+[20:27:58]  ===============================
+
+[20:27:58]       sscanf plugin loaded.     
+
+[20:27:58]          Version:  2.8.2        
+
+[20:27:58]    (c) 2012 Alex "Y_Less" Cole  
+
+[20:27:58]  ===============================
+
+[20:27:58]   Loaded.
+[20:27:58]  Loading plugin: jit
+[20:27:58]   JIT plugin 2.2
+[20:27:58]   Loaded.
+[20:27:58]  Loading plugin: streamer
+[20:27:58] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[20:27:58]   Loaded.
+[20:27:58]  Loaded 3 plugins.
+
+[20:27:58] 
+[20:27:58] Filterscripts
+[20:27:58] ---------------
+[20:27:58]   Loading filterscript 'Anims.amx'...
+[20:27:58]   Loading filterscript 'inter.amx'...
+[20:27:58]   Loading filterscript 'ctuningv22.amx'...
+[20:27:58]   Loaded 3 filterscripts.
+
+[20:27:58] Number of vehicle models: 23
+[20:27:59] [connection] incoming connection: 127.0.0.1:55076 id: 0
+[20:27:59] [npc:join] TrainDriverLV has joined the server (0:127.0.0.1)
+[20:28:18] [connection] incoming connection: 127.0.0.1:55089 id: 1
+[20:28:18] [join] MeDBeD has joined the server (1:127.0.0.1)
+[20:28:28] [part] MeDBeD has left the server (1:2)
+Console input: gmx
+[20:29:44] Number of vehicle models: 23
+[20:29:45] [connection] incoming connection: 127.0.0.1:57799 id: 1
+[20:29:53] [connection] incoming connection: 127.0.0.1:57805 id: 1
+[20:29:53] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[21:29:56] Number of vehicle models: 23
+[21:29:57] [connection] incoming connection: 127.0.0.1:53007 id: 2
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[21:48:58] 
+[21:48:58] Server Plugins
+[21:48:58] --------------
+[21:48:58]  Loading plugin: sscanf
+[21:48:58] 
+
+[21:48:58]  ===============================
+
+[21:48:58]       sscanf plugin loaded.     
+
+[21:48:58]          Version:  2.8.2        
+
+[21:48:58]    (c) 2012 Alex "Y_Less" Cole  
+
+[21:48:58]  ===============================
+
+[21:48:58]   Loaded.
+[21:48:58]  Loading plugin: jit
+[21:48:58]   JIT plugin 2.2
+[21:48:58]   Loaded.
+[21:48:58]  Loading plugin: streamer
+[21:48:58] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[21:48:58]   Loaded.
+[21:48:58]  Loaded 3 plugins.
+
+[21:48:58] 
+[21:48:58] Filterscripts
+[21:48:58] ---------------
+[21:48:58]   Loading filterscript 'Anims.amx'...
+[21:48:58]   Loading filterscript 'inter.amx'...
+[21:48:58]   Loading filterscript 'ctuningv22.amx'...
+[21:48:58]   Loaded 3 filterscripts.
+
+[21:48:58] Number of vehicle models: 23
+[21:48:59] [connection] incoming connection: 127.0.0.1:63266 id: 0
+[21:49:00] [npc:join] TrainDriverLV has joined the server (0:127.0.0.1)
+[21:49:17] [connection] incoming connection: 127.0.0.1:63280 id: 1
+[21:49:18] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[22:01:44] Number of vehicle models: 23
+[22:01:46] [connection] incoming connection: 127.0.0.1:64561 id: 2
+Console input: gmx
+[22:18:55] Number of vehicle models: 23
+[22:18:56] [connection] incoming connection: 127.0.0.1:58792 id: 2
+Console input: gmx
+[22:21:33] Number of vehicle models: 23
+[22:21:35] [connection] incoming connection: 127.0.0.1:62639 id: 2
+[22:21:45] [part] MeDBeD has left the server (1:0)
+[22:22:03] [connection] incoming connection: 127.0.0.1:62657 id: 1
+[22:22:04] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[22:28:25] Number of vehicle models: 23
+[22:28:26] [connection] incoming connection: 127.0.0.1:52137 id: 2
+Console input: gmx
+[22:29:15] Number of vehicle models: 23
+[22:29:17] [connection] incoming connection: 127.0.0.1:60594 id: 2
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[22:55:12] 
+[22:55:12] Server Plugins
+[22:55:12] --------------
+[22:55:12]  Loading plugin: sscanf
+[22:55:12] 
+
+[22:55:12]  ===============================
+
+[22:55:12]       sscanf plugin loaded.     
+
+[22:55:12]          Version:  2.8.2        
+
+[22:55:12]    (c) 2012 Alex "Y_Less" Cole  
+
+[22:55:12]  ===============================
+
+[22:55:12]   Loaded.
+[22:55:12]  Loading plugin: jit
+[22:55:12]   JIT plugin 2.2
+[22:55:12]   Loaded.
+[22:55:12]  Loading plugin: streamer
+[22:55:12] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[22:55:12]   Loaded.
+[22:55:12]  Loaded 3 plugins.
+
+[22:55:12] 
+[22:55:12] Filterscripts
+[22:55:12] ---------------
+[22:55:12]   Loading filterscript 'Anims.amx'...
+[22:55:12]   Loading filterscript 'inter.amx'...
+[22:55:12]   Loading filterscript 'ctuningv22.amx'...
+[22:55:12]   Loaded 3 filterscripts.
+
+[22:55:13] Number of vehicle models: 23
+[22:55:14] [connection] incoming connection: 127.0.0.1:52105 id: 0
+[22:55:14] [npc:join] TrainDriverLV has joined the server (0:127.0.0.1)
+[22:55:37] [connection] incoming connection: 127.0.0.1:65252 id: 1
+[22:55:38] [join] MeDBeD has joined the server (1:127.0.0.1)
+[22:55:49] [part] MeDBeD has left the server (1:0)
+[22:56:41] [connection] incoming connection: 127.0.0.1:65460 id: 1
+[22:56:41] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[23:03:38] Number of vehicle models: 23
+[23:03:39] [connection] incoming connection: 127.0.0.1:56207 id: 2
+Console input: gmx
+[23:10:52] Number of vehicle models: 23
+[23:10:53] [connection] incoming connection: 127.0.0.1:49181 id: 2
+[23:12:28] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[23:12:57] Number of vehicle models: 23
+[23:12:59] [connection] incoming connection: 127.0.0.1:54210 id: 1
+[23:13:05] [connection] incoming connection: 127.0.0.1:54215 id: 1
+[23:13:06] [join] MeDBeD has joined the server (1:127.0.0.1)
+[23:39:14] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[23:39:48] Number of vehicle models: 23
+[23:39:50] [connection] incoming connection: 127.0.0.1:50204 id: 1
+[23:39:56] [connection] incoming connection: 127.0.0.1:50205 id: 1
+[23:39:57] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[23:41:56] Number of vehicle models: 23
+[23:41:57] [connection] incoming connection: 127.0.0.1:64549 id: 2
+[23:43:07] [part] MeDBeD has left the server (1:1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[21:50:41] 
+[21:50:41] Server Plugins
+[21:50:41] --------------
+[21:50:41]  Loading plugin: sscanf
+[21:50:41] 
+
+[21:50:41]  ===============================
+
+[21:50:41]       sscanf plugin loaded.     
+
+[21:50:41]          Version:  2.8.2        
+
+[21:50:41]    (c) 2012 Alex "Y_Less" Cole  
+
+[21:50:41]  ===============================
+
+[21:50:41]   Loaded.
+[21:50:41]  Loading plugin: jit
+[21:50:41]   JIT plugin 2.2
+[21:50:41]   Loaded.
+[21:50:41]  Loading plugin: streamer
+[21:50:41] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[21:50:41]   Loaded.
+[21:50:41]  Loaded 3 plugins.
+
+[21:50:41] 
+[21:50:41] Filterscripts
+[21:50:41] ---------------
+[21:50:41]   Loading filterscript 'Anims.amx'...
+[21:50:41]   Loading filterscript 'inter.amx'...
+[21:50:41]   Loading filterscript 'ctuningv22.amx'...
+[21:50:41]   Loaded 3 filterscripts.
+
+[21:50:42] Number of vehicle models: 23
+[21:50:43] [connection] incoming connection: 127.0.0.1:52500 id: 0
+[21:50:43] [npc:join] TrainDriverLV has joined the server (0:127.0.0.1)
+[21:51:07] [connection] incoming connection: 127.0.0.1:52515 id: 1
+[21:51:07] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[21:55:31] Number of vehicle models: 23
+[21:55:32] [connection] incoming connection: 127.0.0.1:63444 id: 2
+Console input: gmx
+[21:58:03] [part] MeDBeD has left the server (1:1)
+[21:58:14] Number of vehicle models: 23
+[21:58:15] [connection] incoming connection: 127.0.0.1:50457 id: 1
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[22:03:15] 
+[22:03:15] Server Plugins
+[22:03:15] --------------
+[22:03:15]  Loading plugin: sscanf
+[22:03:15] 
+
+[22:03:15]  ===============================
+
+[22:03:15]       sscanf plugin loaded.     
+
+[22:03:15]          Version:  2.8.2        
+
+[22:03:15]    (c) 2012 Alex "Y_Less" Cole  
+
+[22:03:15]  ===============================
+
+[22:03:15]   Loaded.
+[22:03:15]  Loading plugin: jit
+[22:03:15]   JIT plugin 2.2
+[22:03:15]   Loaded.
+[22:03:15]  Loading plugin: streamer
+[22:03:15] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[22:03:15]   Loaded.
+[22:03:15]  Loaded 3 plugins.
+
+[22:03:15] 
+[22:03:15] Filterscripts
+[22:03:15] ---------------
+[22:03:15]   Loading filterscript 'Anims.amx'...
+[22:03:15]   Loading filterscript 'inter.amx'...
+[22:03:15]   Loading filterscript 'ctuningv22.amx'...
+[22:03:15]   Loaded 3 filterscripts.
+
+[22:03:15] Number of vehicle models: 23
+[22:03:16] [connection] incoming connection: 127.0.0.1:62807 id: 0
+[22:03:16] [npc:join] TrainDriverLV has joined the server (0:127.0.0.1)
+[22:03:33] [connection] incoming connection: 127.0.0.1:49514 id: 1
+[22:03:34] [join] MeDBeD has joined the server (1:127.0.0.1)
+[22:05:50] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[22:06:06] Number of vehicle models: 23
+[22:06:07] [connection] incoming connection: 127.0.0.1:53954 id: 1
+[22:06:41] [connection] incoming connection: 127.0.0.1:52682 id: 1
+[22:06:41] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[22:28:55] Number of vehicle models: 23
+[22:28:56] [connection] incoming connection: 127.0.0.1:63104 id: 2
+Console input: gmx
+[22:31:00] Number of vehicle models: 23
+[22:31:01] [connection] incoming connection: 127.0.0.1:62866 id: 2
+Console input: gmx
+[22:46:48] Number of vehicle models: 23
+[22:46:49] [connection] incoming connection: 127.0.0.1:60173 id: 2
+[22:46:59] [part] MeDBeD has left the server (1:0)
+[22:47:18] [connection] incoming connection: 127.0.0.1:56753 id: 1
+[22:47:18] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[22:56:29] Number of vehicle models: 23
+[22:56:30] [connection] incoming connection: 127.0.0.1:49420 id: 2
+Console input: gmx
+[23:12:54] Number of vehicle models: 23
+[23:12:55] [connection] incoming connection: 127.0.0.1:57849 id: 2
+[23:18:59] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[23:19:14] Number of vehicle models: 23
+[23:19:15] [connection] incoming connection: 127.0.0.1:54251 id: 1
+[23:19:22] [connection] incoming connection: 127.0.0.1:54252 id: 1
+[23:19:22] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[23:39:50] [part] MeDBeD has left the server (1:1)
+[23:40:01] Number of vehicle models: 23
+[23:40:02] [connection] incoming connection: 127.0.0.1:52671 id: 1
+[23:40:10] [connection] incoming connection: 127.0.0.1:52672 id: 1
+[23:40:10] [join] MeDBeD has joined the server (1:127.0.0.1)
+[23:41:58] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[23:42:14] Number of vehicle models: 23
+[23:42:15] [connection] incoming connection: 127.0.0.1:51067 id: 1
+[23:42:21] [connection] incoming connection: 127.0.0.1:51071 id: 1
+[23:42:22] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[23:43:15] Number of vehicle models: 23
+[23:43:16] [connection] incoming connection: 127.0.0.1:52806 id: 2
+Console input: gmx
+[23:45:18] Number of vehicle models: 23
+[23:45:19] [connection] incoming connection: 127.0.0.1:53238 id: 2
+[23:49:27] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[23:49:41] Number of vehicle models: 23
+[23:49:42] [connection] incoming connection: 127.0.0.1:64654 id: 1
+[23:49:48] [connection] incoming connection: 127.0.0.1:64655 id: 1
+[23:49:49] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[23:52:14] Number of vehicle models: 23
+[23:52:16] [connection] incoming connection: 127.0.0.1:57147 id: 2
+Console input: gmx
+[23:59:58] [part] MeDBeD has left the server (1:1)
+[00:00:10] Number of vehicle models: 23
+[00:00:11] [connection] incoming connection: 127.0.0.1:56753 id: 1
+[00:00:24] [connection] incoming connection: 127.0.0.1:56757 id: 1
+[00:00:24] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[00:02:30] Number of vehicle models: 23
+[00:02:31] [connection] incoming connection: 127.0.0.1:61797 id: 2
+Console input: gmx
+[00:03:33] Number of vehicle models: 23
+[00:03:34] [connection] incoming connection: 127.0.0.1:63210 id: 2
+Console input: gmx
+[00:06:06] Number of vehicle models: 23
+[00:06:07] [connection] incoming connection: 127.0.0.1:60550 id: 2
+[00:06:16] [part] MeDBeD has left the server (1:0)
+[00:06:30] [connection] incoming connection: 127.0.0.1:55273 id: 1
+[00:06:31] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[00:07:29] Number of vehicle models: 23
+[00:07:30] [connection] incoming connection: 127.0.0.1:55280 id: 2
+Console input: gmx
+[00:12:43] Number of vehicle models: 23
+[00:12:44] [connection] incoming connection: 127.0.0.1:59580 id: 2
+[00:16:31] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[00:16:45] Number of vehicle models: 23
+[00:16:46] [connection] incoming connection: 127.0.0.1:63801 id: 1
+[00:16:53] [connection] incoming connection: 127.0.0.1:60463 id: 1
+[00:16:54] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[00:20:53] Number of vehicle models: 23
+[00:20:54] [connection] incoming connection: 127.0.0.1:60486 id: 2
+Console input: gmx
+[00:25:13] Number of vehicle models: 23
+[00:25:14] [connection] incoming connection: 127.0.0.1:62874 id: 2
+Console input: gmx
+[00:29:14] Number of vehicle models: 23
+[00:29:15] [connection] incoming connection: 127.0.0.1:64593 id: 2
+[00:29:24] [part] MeDBeD has left the server (1:0)
+[00:29:37] [connection] incoming connection: 127.0.0.1:57667 id: 1
+[00:29:38] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[00:31:05] Number of vehicle models: 23
+[00:31:06] [connection] incoming connection: 127.0.0.1:56541 id: 2
+Console input: gmx
+[00:37:59] [part] MeDBeD has left the server (1:1)
+[00:38:10] Number of vehicle models: 23
+[00:38:11] [connection] incoming connection: 127.0.0.1:57581 id: 1
+[00:38:19] [connection] incoming connection: 127.0.0.1:57585 id: 1
+[00:38:19] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[00:53:03] Number of vehicle models: 23
+[00:53:04] [connection] incoming connection: 127.0.0.1:60516 id: 2
+Console input: gmx
+[01:22:14] Number of vehicle models: 23
+[01:22:15] [connection] incoming connection: 127.0.0.1:62328 id: 2
+[01:23:23] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[01:23:37] Number of vehicle models: 23
+[01:23:39] [connection] incoming connection: 127.0.0.1:64772 id: 1
+[01:23:47] [connection] incoming connection: 127.0.0.1:64778 id: 1
+[01:23:47] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[01:31:12] Number of vehicle models: 23
+[01:31:13] [connection] incoming connection: 127.0.0.1:64205 id: 2
+[01:35:57] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[01:36:11] Number of vehicle models: 23
+[01:36:12] [connection] incoming connection: 127.0.0.1:59298 id: 1
+Console input: gmx
+[01:37:01] [connection] incoming connection: 127.0.0.1:58047 id: 1
+[01:37:01] [join] MeDBeD has joined the server (1:127.0.0.1)
+[01:37:05] Number of vehicle models: 23
+[01:37:06] [connection] incoming connection: 127.0.0.1:58051 id: 2
+Console input: gmx
+[01:37:53] Number of vehicle models: 23
+[01:37:54] [connection] incoming connection: 127.0.0.1:61827 id: 2
+[01:38:31] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[01:38:44] Number of vehicle models: 23
+[01:38:45] [connection] incoming connection: 127.0.0.1:61851 id: 1
+[01:38:52] [connection] incoming connection: 127.0.0.1:61856 id: 1
+[01:38:52] [join] MeDBeD has joined the server (1:127.0.0.1)
+[01:41:29] [part] MeDBeD has left the server (1:1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[09:22:50] 
+[09:22:50] Server Plugins
+[09:22:50] --------------
+[09:22:50]  Loading plugin: sscanf
+[09:22:50] 
+
+[09:22:50]  ===============================
+
+[09:22:50]       sscanf plugin loaded.     
+
+[09:22:50]          Version:  2.8.2        
+
+[09:22:50]    (c) 2012 Alex "Y_Less" Cole  
+
+[09:22:50]  ===============================
+
+[09:22:50]   Loaded.
+[09:22:50]  Loading plugin: jit
+[09:22:50]   JIT plugin 2.2
+[09:22:50]   Loaded.
+[09:22:50]  Loading plugin: streamer
+[09:22:50] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[09:22:50]   Loaded.
+[09:22:50]  Loaded 3 plugins.
+
+[09:22:50] 
+[09:22:50] Filterscripts
+[09:22:50] ---------------
+[09:22:50]   Loading filterscript 'Anims.amx'...
+[09:22:50]   Loading filterscript 'inter.amx'...
+[09:22:50]   Loading filterscript 'ctuningv22.amx'...
+[09:22:50]   Loaded 3 filterscripts.
+
+[09:22:50] Number of vehicle models: 23
+[09:22:51] [connection] incoming connection: 127.0.0.1:58264 id: 0
+[09:22:52] [npc:join] TrainDriverLV has joined the server (0:127.0.0.1)
+[09:23:10] [connection] incoming connection: 127.0.0.1:57617 id: 1
+[09:23:11] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[09:27:38] Number of vehicle models: 23
+[09:27:40] [connection] incoming connection: 127.0.0.1:65430 id: 2
+[09:50:38] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[09:50:51] Number of vehicle models: 23
+[09:50:52] [connection] incoming connection: 127.0.0.1:57926 id: 1
+[09:50:58] [connection] incoming connection: 127.0.0.1:50957 id: 1
+[09:50:58] [join] MeDBeD has joined the server (1:127.0.0.1)
+Console input: gmx
+[09:52:23] Number of vehicle models: 23
+[09:52:25] [connection] incoming connection: 127.0.0.1:62905 id: 2
+[09:54:03] [part] MeDBeD has left the server (1:1)
+Console input: gmx
+[09:54:16] Number of vehicle models: 23
+[09:54:17] [connection] incoming connection: 127.0.0.1:62907 id: 1
+[09:54:26] [connection] incoming connection: 127.0.0.1:62908 id: 1
+[09:54:26] [join] MeDBeD has joined the server (1:127.0.0.1)
+
+----------
+Loaded log file: "server_log.txt".
+----------
+
+SA-MP Dedicated Server
+----------------------
+v0.3.7-R2, (C)2005-2015 SA-MP Team
+
+[13:45:38] 
+[13:45:38] Server Plugins
+[13:45:38] --------------
+[13:45:38]  Loading plugin: sscanf
+[13:45:38] 
+
+[13:45:38]  ===============================
+
+[13:45:38]       sscanf plugin loaded.     
+
+[13:45:38]          Version:  2.8.2        
+
+[13:45:38]    (c) 2012 Alex "Y_Less" Cole  
+
+[13:45:38]  ===============================
+
+[13:45:38]   Loaded.
+[13:45:38]  Loading plugin: jit
+[13:45:38]   JIT plugin 2.2
+[13:45:38]   Loaded.
+[13:45:38]  Loading plugin: streamer
+[13:45:38] 
+
+*** Streamer Plugin v2.9.3 by Incognito loaded ***
+
+[13:45:38]   Loaded.
+[13:45:38]  Loaded 3 plugins.
+
+[13:45:38] 
+[13:45:38] Filterscripts
+[13:45:38] ---------------
+[13:45:38]   Loading filterscript 'Anims.amx'...
+[13:45:38]   Loading filterscript 'inter.amx'...
+[13:45:38]   Loading filterscript 'ctuningv22.amx'...
+[13:45:38]   Loaded 3 filterscripts.
+
+[13:45:38] Number of vehicle models: 23
+[13:45:39] [connection] incoming connection: 127.0.0.1:54204 id: 0
