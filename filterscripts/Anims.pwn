@@ -1,4 +1,5 @@
 #include <a_samp>
+
 // All animation and Special Actions 1.4 by PatrickW, 009, O.K.Style | Fix by Ym[0]n
 #if !defined SPECIAL_ACTION_PISSING
 	#define SPECIAL_ACTION_PISSING 68

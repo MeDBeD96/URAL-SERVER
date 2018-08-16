@@ -49,11 +49,10 @@ APED 'Angel Pine Electrical Document':  1. Можно открыть раздвигающиеся ворота д
 
 #include <a_samp>
 #include <foreach>  
-#include <streamer>
-#include <sscanf2>
-//#include <nex-ac>
 #include <a_actor>
 #include <mxINI>
+#include <streamer>
+#include <sscanf2>
 #include <izcmd>
 #include <objects>
 #include <keypad>
@@ -149,7 +148,6 @@ main()
 	(%0 & (%1))
 #define PRESSED(%0) \
 	(((newkeys & (%0)) == (%0)) && ((oldkeys & (%0)) != (%0)))
-	
 
 new Float:gFerrisCageOffsets[10][3]={{0.0699,0.0600,-11.7500},{-6.9100,-0.0899,-9.5000},{11.1600,0.0000,-3.6300},{-11.1600,-0.0399,3.6499},{-6.9100,-0.0899,9.4799},
 	{0.0699,0.0600,11.7500},{6.9599,0.0100,-9.5000},{-11.1600,-0.0399,-3.6300},{11.1600,0.0000,3.6499},{7.0399,-0.0200,9.3600}},
@@ -179,12 +177,9 @@ new bool:gPlayerLogged[MAX_PLAYERS];
 new bool:SpecON[MAX_PLAYERS];
 new bool:engine,lights,alarm,doors,bonnet,boot,objective;
 new bool:animloading[MAX_PLAYERS];
-new bool:Engine[MAX_VEHICLES]; 
-
-new bool:tazer_status[MAX_PLAYERS char];
+new bool:Engine[MAX_VEHICLES];
 
 new bool:PlayerRun[MAX_PLAYERS];
-new bool:PlayerDeath[MAX_PLAYERS];
 
 new Text:box[MAX_PLAYERS],Text:speed[MAX_PLAYERS],Text:fuel[MAX_PLAYERS];
 new bool:IsPlayerBlackScreen[MAX_PLAYERS];
@@ -207,8 +202,7 @@ new RentCar[MAX_PLAYERS];
 new PlayerMoney[MAX_PLAYERS];  // для античита 
 new inputfuel[MAX_PLAYERS];
 new PlayerTimerID[MAX_PLAYERS]; // индивидуальные таймеры 
-new PlayerTimerIDTimer1Second;
-new PlayerTimerIDTimer60Second; 
+new PlayerTimerIDTimer1Second; 
 
 new bool:ClockIsOn[MAX_PLAYERS]; 
 new bool:MapIsOn[MAX_PLAYERS]; 
@@ -259,9 +253,7 @@ enum pInfo
 	pAPEDBattery,
 	pHunger,
 	pEndurance,
-	pEnduranceMax,
-	Float:pHP,
-	pHouse
+	pEnduranceMax
 }
 new PlayerInfo[MAX_PLAYERS][pInfo];
 
@@ -379,19 +371,6 @@ enum
 #define D_S_T DIALOG_STYLE_TABLIST 
 #define D_S_TH DIALOG_STYLE_TABLIST_HEADERS 
 
-#if !defined BODY_PART_TORSO
-enum
-{
-    BODY_PART_TORSO = 3,
-    BODY_PART_GROIN,
-    BODY_PART_LEFT_ARM,
-    BODY_PART_RIGHT_ARM,
-    BODY_PART_LEFT_LEG,
-    BODY_PART_RIGHT_LEG,
-    BODY_PART_HEAD
-};
-#endif 
-
 
 new VehicleNames[212][] = {
 "Landstalker","Bravura","Buffalo","Linerunner","Pereniel","Sentinel","Dumper","Firetruck","Trashmaster","Stretch","Manana","Infernus",
@@ -442,7 +421,7 @@ public OnGameModeInit()
     LimitGlobalChatRadius(0.0);
     ShowPlayerMarkers(0);
     EnableStuntBonusForAll(0);
-	//UsePlayerPedAnims();
+	UsePlayerPedAnims();
 	
     SetTimer("Processor",PROCESSOR_UPDATE,true);
     SetTimer("SpeedoUpdate",100,true);
@@ -515,12 +494,8 @@ public OnGameModeInit()
 		Engine[v] = false;
 		if(Veh[v][vAdd] == 1 && Veh[v][vBuy] == 0)
         {
-			static const
-				fmt_str0[] = "Продается\nСтоимость: "COL_GREEN"%i $";
-				
-			new string[sizeof(fmt_str0) + (-2+10)];
-			
-			format(string, sizeof(string), fmt_str0 ,Veh[v][vPrice]);
+			new string[50];
+			format(string, sizeof(string), "Продается\nСтоимость: "COL_GREEN"%i $",Veh[v][vPrice]);
 			sellveh[v] = Create3DTextLabel( string, COLOR_PROX, 0, 0, 0, 5.0, 0, 0 );
 			Attach3DTextLabelToVehicle(Text3D:sellveh[v], v, 0.0, 0.0, 0.8);
         }
@@ -598,7 +573,7 @@ public OnGameModeExit()
 public OnPlayerRequestClass(playerid, classid)
 {
 	TogglePlayerSpectating(playerid, 1);
-	SetSpawnInfo(playerid, 0, PlayerInfo[playerid][pSkin], PlayerInfo[playerid][pPos_x], PlayerInfo[playerid][pPos_y], PlayerInfo[playerid][pPos_z], PlayerInfo[playerid][pFa], 0, 0, 0, 0, 0, 0);
+	SetSpawnInfo(playerid, 0, 0, PlayerInfo[playerid][pPos_x], PlayerInfo[playerid][pPos_y], PlayerInfo[playerid][pPos_z], PlayerInfo[playerid][pFa], 0, 0, 0, 0, 0, 0);
 	SpawnPlayer(playerid);
 	return 1;
 }
@@ -644,7 +619,6 @@ public OnPlayerConnect(playerid)
     gPlayerLogged[playerid] = false;
     ClearAnimations(playerid);
     animloading[playerid] = false;
-	PlayerDeath[playerid] = false;
 	FonBox[playerid] = 0; 
     PlayerTextDrawDestroy(playerid, fon_PTD[playerid]);  
     
@@ -673,8 +647,6 @@ public OnPlayerConnect(playerid)
 	PlayerInfo[playerid][pHunger] = 0;
 	PlayerInfo[playerid][pEndurance] = 0;
 	PlayerInfo[playerid][pEnduranceMax] = 0;
-	PlayerInfo[playerid][pHP] = 0.0;
-	PlayerInfo[playerid][pHouse] = 0;
 	
 	//for(new pInfo:i; i<pInfo; ++i) PlayerInfo[playerid][i] = 0;  
 
@@ -702,7 +674,7 @@ public OnPlayerConnect(playerid)
 
 public OnPlayerDisconnect(playerid, reason)
 {
-	ResetPlayerMoney(playerid);	
+	ResetPlayerMoney(playerid); 
     TextDrawDestroy(box[playerid]);
 	TextDrawDestroy(speed[playerid]);
 	TextDrawDestroy(fuel[playerid]);
@@ -724,33 +696,14 @@ public OnPlayerSpawn(playerid)
 	}
 	if(PlayerInfo[playerid][pReg] == 2)
 	{
-		if(PlayerDeath[playerid])
-		{
-			SetPlayerPos(playerid,342.1416,161.8187,1019.9844);
-			SetPlayerFacingAngle(playerid, 182.8467); 
-			SetPlayerInterior(playerid, 3);
-			SetPlayerVirtualWorld(playerid, 1);
-			
-			PlayerInfo[playerid][pHP] = 10;
-			
-			PlayerDeath[playerid] = false;
-		}
-		else
-		{
-			SetPlayerPos(playerid,PlayerInfo[playerid][pPos_x], PlayerInfo[playerid][pPos_y],PlayerInfo[playerid][pPos_z] + 0.5);
-			SetPlayerFacingAngle( playerid, PlayerInfo[playerid][pFa]); 
-			SetPlayerInterior(playerid, PlayerInfo[playerid][pInt]);
-			SetPlayerVirtualWorld(playerid, PlayerInfo[playerid][pWorld]);
-		}		
-		
 		TogglePlayerSpectating(playerid, 0);
 		SetPVarInt(playerid, "IsPlayerSpawn", 1);
 		
+		SetPlayerPos(playerid,PlayerInfo[playerid][pPos_x], PlayerInfo[playerid][pPos_y],PlayerInfo[playerid][pPos_z] + 0.5);
+		SetPlayerFacingAngle( playerid, PlayerInfo[playerid][pFa]); 
+		SetPlayerInterior(playerid, PlayerInfo[playerid][pInt]);
+		SetPlayerVirtualWorld(playerid, PlayerInfo[playerid][pWorld]);
 		SetPlayerSkin(playerid, PlayerInfo[playerid][pSkin]);
-		
-		SetPlayerHealth(playerid, PlayerInfo[playerid][pHP]);
-		GivePlayerMoney(playerid, PlayerInfo[playerid][pMoney]);
-		
 		SetCameraBehindPlayer(playerid);
 		
 		if(PlayerInfo[playerid][pAPED] == 0) GangZoneShowForPlayer(playerid, blackmap, 255);
@@ -776,8 +729,6 @@ public OnPlayerSpawn(playerid)
 
 public OnPlayerDeath(playerid, killerid, reason)
 {
-	PlayerDeath[playerid] = true;
-	PlayerInfo[playerid][pHP] = 1;
 	DeletePVar(playerid, "IsPlayerSpawn");
 	return 1;
 }
@@ -804,7 +755,7 @@ public OnPlayerText(playerid, text[])
 	
     SetPlayerChatBubble(playerid,text,COLOR_PROX,20.0,7000);
 	
-	GiveEndurance(playerid, -1);
+	GiveEndurance(playerid, -2);
 	
     ApplyAnimation(playerid, "GANGS", "prtial_gngtlkE", 4.1, 0, 1, 1, 1, 1, 1);
 	
@@ -1027,19 +978,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		else return	SendClientMessage(playerid,COLOR_RED,"У вас нет ключей от этого транспорта.");
     }
     
-	if(newkeys & KEY_FIRE)
-    {
-        if(tazer_status{playerid})
-        {
-            new targetplayer = GetPlayerTargetPlayer(playerid);
-            if(targetplayer != INVALID_PLAYER_ID)
-            {
-                TogglePlayerControllable(targetplayer, 0);
-                SetTimerEx("UnfreezeTazer", 10000, 0, "%d", targetplayer);
-            }
-        }
-    }  
-	
+
     if(newkeys == KEY_JUMP)
 	{
         if(IsPlayerInRangeOfPoint(playerid, 3.0,-2082.5891,-2418.1428,32.8820) || IsPlayerInRangeOfPoint(playerid, 3.0,-2089.1011,-2413.7351,32.9020) || 
@@ -2370,9 +2309,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		{
 			if(response)
 			{
-				new string[MAX_PLAYER_NAME+1+49];
+				new string[MAX_PLAYER_NAME+1+12];
 				
-				format(string, sizeof(string), "%s достает сменную одежду из шкафа и переодевается.", Name(playerid));
+				format(string, sizeof(string), "%s переодевается.", Name(playerid));
 				ProxDetector(playerid, COLOR_PROX, string, 10);
 				
 				ShowFonForPlayer(playerid);
@@ -2381,7 +2320,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 				GiveEndurance(playerid, -2);				
 				
-				SetTimerEx("BlackScreenTimer", 500, 0, "i", playerid);
+				SetTimerEx("BlackScreenTimer", 800, 0, "i", playerid);
 			}
 		}
 		
@@ -2619,38 +2558,6 @@ public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
  	}
  	SetPlayerVirtualWorld(playerid, 0);
  	SetPlayerInterior(playerid, 0);
-    return 1;
-}
-
-public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart)
-{
-	if(issuerid != INVALID_PLAYER_ID) // если игрок не ударился сам
-    {
-        new issuerweaponid = GetPlayerWeapon(issuerid);
-        if(19 <= issuerweaponid <= 34 || issuerweaponid == 38) // если урон от огнестрельного оружия
-        {
-            switch(bodypart)
-            {
-                case BODY_PART_TORSO: // туловище
-                {
-                    PlayerInfo[playerid][pHP] -= 75;
-                }
-                case BODY_PART_GROIN: // пах
-                {
-                    PlayerInfo[playerid][pHP] -= 35;
-                }
-                case BODY_PART_LEFT_ARM, BODY_PART_RIGHT_ARM, BODY_PART_LEFT_LEG, BODY_PART_RIGHT_LEG: // руки, ноги
-                {
-                    PlayerInfo[playerid][pHP] -= 50;
-                }
-                case BODY_PART_HEAD: // голова
-                {
-                    PlayerInfo[playerid][pHP] -= 100;
-                }
-            }
-        }
-    } 
-	else	PlayerInfo[playerid][pHP] -= amount;
     return 1;
 }
 
@@ -2942,11 +2849,10 @@ CMD:ban(playerid, params[])
 	if (PlayerInfo[playerid][pAdmin] < 5) return 1;
 	
 	if(sscanf(params,"is[30]",params[0],params[1])) 
-		return SendClientMessage(playerid,COLOR_GREY,"CMD: /ban [ID игрока] [Причина]");
+	return SendClientMessage(playerid,COLOR_GREY,"CMD: /ban [ID игрока] [Причина]");
 
 	if (params[0] == INVALID_PLAYER_ID || !IsPlayerConnected(params[0]) || gPlayerLogged[params[0]] == false) 
-		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
-	
+	return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 	new str[128],
 		string[128];
 		
@@ -2965,7 +2871,7 @@ CMD:ban(playerid, params[])
 CMD:makeadmin(playerid, params[])
 {
     //if (PlayerInfo[playerid][pAdmin] < 5) return 1;
-    if (sscanf(params, "dD(5)", params[0], params[1])) 
+    if (sscanf(params, "dd", params[0], params[1])) 
 	return SendClientMessage(playerid, COLOR_GREY, "CMD: /makeadmin [ID игрока] [Уровень администратора]");
 
     if (params[0] == INVALID_PLAYER_ID || !IsPlayerConnected(params[0]) || gPlayerLogged[params[0]] == false) 
@@ -3000,104 +2906,59 @@ CMD:setsex(playerid,params[])
 
 CMD:a(playerid, params[])
 {
-    new string[145],
-	text;
+    new string[145];
 	if(PlayerInfo[playerid][pAdmin] == 0) return 1;
 	
-	if(sscanf(params, "s[145]", text)) 
+	if(sscanf(params, "s[145]", params[0])) 
 	return SendClientMessage(playerid, COLOR_GREY, "CMD: /a [Сообщение]");
 
-	format(string, sizeof(string), ""COL_ORANGE"Администратор [%d] %s: "COL_WHITE"%s", playerid,Name(playerid), text);
+	format(string, sizeof(string), ""COL_ORANGE"Администратор [%d] %s: "COL_WHITE"%s", playerid,Name(playerid), params[0]);
 	MessageToAdmin(COLOR_WHITE, string);
 	return true;
 }
 
 CMD:setmoney(playerid, params[])
 {
-	new targetid,
-        amount;
-	
     if (PlayerInfo[playerid][pAdmin] < 5) return 1;
 	
-    if(sscanf(params,"ui", targetid, amount)) 
+    if(sscanf(params,"ui", params[0], params[1])) 
 	return SendClientMessage(playerid, COLOR_GREY, "CMD: /setmoney [ID игрока] [Кол-во денег]");
 
-	if (targetid == INVALID_PLAYER_ID || !IsPlayerConnected(targetid) || gPlayerLogged[targetid] == false) 
-		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
-
-    PlayerInfo[targetid][pMoney] = amount;
+    PlayerInfo[params[0]][pMoney] = params[1];
     return true;
 }
 
 CMD:sethunger(playerid, params[])
 {
-	new targetid,
-        amount;
-	
     if (PlayerInfo[playerid][pAdmin] < 5) return 1;
 	
-    if(sscanf(params,"ui", targetid, amount)) 
+    if(sscanf(params,"ui", params[0], params[1])) 
 	return SendClientMessage(playerid, COLOR_GREY, "CMD: /sethunger [ID игрока] [Кол-во голода]");
 
-	if (targetid == INVALID_PLAYER_ID || !IsPlayerConnected(targetid) || gPlayerLogged[targetid] == false) 
-		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
-
-    PlayerInfo[targetid][pHunger] = amount;
+    PlayerInfo[params[0]][pHunger] = params[1];
     return true;
 }
 
 CMD:setendurance(playerid, params[])
 {
-	new targetid,
-        amount;
-	
     if (PlayerInfo[playerid][pAdmin] < 5) return 1;
 	
-    if(sscanf(params,"ui", targetid, amount)) 
+    if(sscanf(params,"ui", params[0], params[1])) 
 	return SendClientMessage(playerid, COLOR_GREY, "CMD: /setendurance [ID игрока] [Кол-во выносливости]");
 
-	if (targetid == INVALID_PLAYER_ID || !IsPlayerConnected(targetid) || gPlayerLogged[targetid] == false) 
-		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
-
-    PlayerInfo[targetid][pEndurance] = amount;
+    PlayerInfo[params[0]][pEndurance] = params[1];
     return true;
 }
 
 CMD:setbattery(playerid, params[])
 {
-	new targetid,
-        amount;
-	
     if (PlayerInfo[playerid][pAdmin] < 5) return 1;
 	
-    if(sscanf(params,"ui", targetid, amount)) 
-		return SendClientMessage(playerid, COLOR_GREY, "CMD: /setbattery [ID игрока] [Заряд батареи]");
-	
-	if (targetid == INVALID_PLAYER_ID || !IsPlayerConnected(targetid) || gPlayerLogged[targetid] == false) 
-		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
+    if(sscanf(params,"ui", params[0], params[1])) 
+	return SendClientMessage(playerid, COLOR_GREY, "CMD: /setbattery [ID игрока] [Заряд батареи]");
 
-    PlayerInfo[targetid][pAPEDBattery] = amount;
-	return true;
-}
-
-CMD:sethp(playerid, params[])
-{
-    if (PlayerInfo[playerid][pAdmin] < 5) return 1;
-
-    new targetid,
-        amount;
-
-    if(sscanf(params, "ui", targetid, amount))
-        return SendClientMessage(playerid, COLOR_GREY, "CMD: /sethp [ID игрока] [Количество HP]");
-	
-    if (targetid == INVALID_PLAYER_ID || !IsPlayerConnected(targetid) || gPlayerLogged[targetid] == false) 
-		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
-	
-    if(!(0 <= amount <= 100))
-        return SendClientMessage(playerid, COLOR_GREY, "Количество здоровья от 0 до 100.");
-	
-	PlayerInfo[targetid][pHP] = amount;
-	return 1;
+    PlayerInfo[params[0]][pAPEDBattery] = params[1];
+    return true;
 }
 
 CMD:goto(playerid, params[])
@@ -3189,20 +3050,11 @@ CMD:gethere(playerid, params[])
 
 CMD:givegun(playerid, params[])
 {
-	if (PlayerInfo[playerid][pAdmin] < 5) return 1;
-	
-	new _playerid, weaponid, bullet;
-	
-	if(sscanf(params,"udD(1)", _playerid, weaponid, bullet)) 
-		return SendClientMessage(playerid, COLOR_GREY, "CMD: /givegun [ID игрока] [ID оружия] [Кол-во патронов]");
-	
-	if (_playerid == INVALID_PLAYER_ID || !IsPlayerConnected(_playerid) || gPlayerLogged[_playerid] == false) 
-		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
-
-	if(weaponid > 47 || weaponid < 1 || (19 <= weaponid <= 21))
-        return SendClientMessage(playerid, COLOR_GREY,"ID оружия: 1..18, 22..46.");
-	
-    GivePlayerWeapon(_playerid, weaponid, bullet);
+    if (PlayerInfo[playerid][pAdmin] < 5) return 1;
+	//sscanf(params,"uii", params[0], params[1], params[2]);
+    if(sscanf(params,"uii", params[0], params[1], params[2])) return SendClientMessage(playerid, COLOR_GREY, "CMD: /givegun [ID игрока] [ID оружия] [Кол-во патронов]");
+    if(params[1] > 47 || params[1] < 1) return SendClientMessage(playerid, COLOR_GREY,"ID оружия от 1 до 46.");
+    GivePlayerWeapon(params[0], params[1], params[2]);
     return true;
 }
 
@@ -3353,22 +3205,11 @@ CMD:hi(playerid, params[])
 
 CMD:report(playerid, params[])
 {
-    if(sscanf(params, "s[128]", params[0])) return SendClientMessage(playerid, COLOR_GREY, "CMD: /report [текст вопроса/жалобы]");
+    if(sscanf(params, "s[144]", params[0])) return SendClientMessage(playerid, COLOR_GREY, "CMD: /report [текст вопроса/жалобы]");
 	
-	static const
-			fmt_str0[] = ""COL_RED"[REPORT]"COL_ORANGE" от игрока [%d] %s : "COL_WHITE"%s";
-		
-	const
-		size0 = sizeof(fmt_str0) - (9+12+11) - (2+2) + 5 + (MAX_PLAYER_NAME+1-2) + 128;
-			
-	#if size0 > 144
-		#define size 144
-	#endif
-		
-	new string[size];
-	#undef size
+    new string[100 + MAX_PLAYER_NAME+1];
 	
-    format(string,sizeof(string), fmt_str0, playerid, Name(playerid), params[0]);
+    format(string,sizeof(string),""COL_ORANGE""COL_RED"[REPORT]"COL_ORANGE" от игрока [%d] %s : "COL_WHITE"%s", playerid, Name(playerid), params[0]);
     MessageToAdmin(COLOR_WHITE, string);
 	
     SendClientMessage(playerid, COLOR_GREEN, "Вы успешно отправили сообщение администрации.");
@@ -3380,53 +3221,6 @@ CMD:test(playerid, params[])
     ViewFactions(playerid);
     return 1;
 }
-
-CMD:coin(playerid, params[])
-{
-    if(PlayerInfo[playerid][pMoney] <= 0)
-        return SendClientMessage(playerid, COLOR_GREY, "У вас нет ни одной монеты.");
-
-    static const    coin_str0[] = " подбросил монетку, выпал",
-                    coin_str1[] = "а \"решка\".", coin_str2[] = " \"орёл\".";
-
-    new    string[MAX_PLAYER_NAME+(sizeof(coin_str0)-1)+(sizeof(coin_str1)-1)+1];
-
-    strcat(string, Name(playerid));
-	strcat(string, coin_str0);
-    strcat(string, (random(2)) ? (coin_str1) : (coin_str2));
-	
-	ProxDetector(playerid,COLOR_PROX, string, 10.0);
-    return 1;
-}  
-
-CMD:tazer(playerid, params[])
-{
-	if(PlayerInfo[playerid][pMember] == 2)
-	{
-		static const tazer_str0[] = " достает электрошокер.", tazer_str1[] = " убирает электрошокер.";
-
-		new string[MAX_PLAYER_NAME+(sizeof(tazer_str0))+1];
-
-		strcat(string, Name(playerid));
-		strcat(string, (!tazer_status{playerid}) ? (tazer_str0) : (tazer_str1));
-		
-		if(!tazer_status{playerid})
-		{
-			SetPlayerAttachedObject(playerid, 0, 18642, 6, 0.06, 0.01, 0.08, 180.0, 0.0, 0.0);
-			tazer_status{playerid} = true;
-			
-			ProxDetector(playerid,COLOR_PROX, string, 10.0);
-		}
-		else
-		{
-			RemovePlayerAttachedObject(playerid, 0);
-			tazer_status{playerid} = false;
-			
-			ProxDetector(playerid,COLOR_PROX, string, 10.0);
-		}
-	}
-    return 1;
-}  
 
 
 
@@ -3468,8 +3262,6 @@ SavePlayer(playerid)
 	ini_setInteger(iniFile, "Hunger", PlayerInfo[playerid][pHunger]);
 	ini_setInteger(iniFile, "Endurance", PlayerInfo[playerid][pEndurance]);
 	ini_setInteger(iniFile, "EnduranceMax", PlayerInfo[playerid][pEnduranceMax]);
-	ini_setFloat(iniFile, "HP", PlayerInfo[playerid][pHP]);
-	ini_setInteger(iniFile, "House", PlayerInfo[playerid][pHouse]);
     ini_closeFile(iniFile);
     return 1;
 }
@@ -3514,15 +3306,12 @@ OnPlayerRegister(playerid, password[])
 			ini_setInteger(iniFile, "Hunger", SEVENHOURS);
 			ini_setInteger(iniFile, "Endurance", SEVENHOURS);
 			ini_setInteger(iniFile, "EnduranceMax", SEVENHOURS);
-			ini_setFloat(iniFile, "HP", 100.0);
-			ini_setInteger(iniFile, "House", 0);
             ini_closeFile(iniFile);// Закрываем файл
         }
 		
 		PlayerInfo[playerid][pSex] = GetPVarInt(playerid, "Sex");
 		PlayerInfo[playerid][pSkin] = GetPVarInt(playerid, "Skin");
 		PlayerInfo[playerid][pMoney] = 100;
-		PlayerInfo[playerid][pHP] = 100;
 		PlayerInfo[playerid][pReg] = 1;	
 		
 		PlayerInfo[playerid][pHunger] = SEVENHOURS;
@@ -3571,8 +3360,6 @@ OnPlayerLogin(playerid,password[])
 			ini_getInteger(iniFile, "Hunger", PlayerInfo[playerid][pHunger]);
 			ini_getInteger(iniFile, "Endurance", PlayerInfo[playerid][pEndurance]);
 			ini_getInteger(iniFile, "EnduranceMax", PlayerInfo[playerid][pEnduranceMax]);
-			ini_getFloat(iniFile, "HP", PlayerInfo[playerid][pHP]);
-			ini_getInteger(iniFile, "House", PlayerInfo[playerid][pHouse]);
             ini_closeFile(iniFile);// Закрываем файл
         }
         else// Если пароль не верен..
@@ -4023,13 +3810,15 @@ ShowPlayerLeaderDialog(playerid)
 ShowPlayerAPEDDialog(playerid)
 {
 	new Float:battery,
-		d37[70];
+		d37[60];
+		
+	static D37[] = ""COL_ORANGE"Меню APED.     Заряд батареи: "COL_WHITE"[%d %%]";
 		
 	battery = floatround(PlayerInfo[playerid][pAPEDBattery] / 360, floatround_ceil);
 	
-	format(d37,sizeof(d37),""COL_ORANGE"Меню APED.          Заряд батареи: "COL_WHITE"[ %.0f %% ]",battery);
+	format(d37, sizeof(d37), D37, battery);
 	
-	ShowPlayerDialog(playerid, DIALOG_ID_APEDMENU, D_S_L, d37, "\
+	ShowPlayerDialog(playerid, DIALOG_ID_APEDMENU, D_S_L, D37, "\
 	"COL_WHITE"[1] "COL_BLUE"Информация о Вашем состоянии\n\
 	"COL_WHITE"[2] "COL_BLUE"Действия\n\
 	"COL_WHITE"[3] "COL_BLUE"Меню организации\n\
@@ -4060,58 +3849,44 @@ ShowPlayerAPEDSettingsDialog(playerid)
 ShowPlayerPlayerInfoDialog(playerid)
 {
 	static D35[] = 
-			" \t "\
-			"\n"COL_BLUE"Сытость: \t%s"\
+			""COL_BLUE"Сытость: \t%s"\
 			"\n"COL_BLUE"Усталость: \t%s"\
 			"\n"COL_BLUE"Состояние здоровья: \t%s"\
 			"\n\t"\
-			"\n"COL_BLUE"Наличные: \t"COL_GREEN"%d $"\
-			"\n"COL_BLUE"Ключи от автомобиля №: \t%d"\
-			"\n"COL_BLUE"Организация: \t%s";
+			"\n"COL_BLUE"Состояние здоровья: \t%s";
 			
-	new d35[512],
+	new d35[256],
 		d36[64],
 		hunger[40],
 		endurance[40],
 		healths[25],
-		money,
-		carkey,
-		org[MAX_FRACTION_NAME_LENGTH],
 		Float:health,
 		Float:battery;
 		
-    GetPlayerHealth(playerid,health);
-	
-	battery = floatround(PlayerInfo[playerid][pAPEDBattery] / 360, floatround_ceil);
-	money = PlayerInfo[playerid][pMoney];
-	carkey = PlayerInfo[playerid][pCarKey];
-	org = fraction_name[PlayerInfo[playerid][pMember]];
-	
-	static D36[] = ""COL_ORANGE"Меню APED.          Заряд батареи: "COL_WHITE"[ %.0f %% ]";
+    GetPlayerHealth(playerid,health);	
 			
 	if(health >= 100.0) healths = ""COL_STATUS1"Отличное";
-	if(80.0 <= health < 100.0) healths = ""COL_STATUS2"Хорошее";
-	if(50.0 <= health < 80.0) healths = ""COL_STATUS3"Среднее";
-	if(11.0 <= health < 50.0) healths = ""COL_STATUS5"Плохое";
-	if(0.0 < health < 11.0) healths = ""COL_STATUS6"Критическое";
+	if(health >= 80.0 && health < 100.0) healths = ""COL_STATUS2"Хорошее";
+	if(health >= 50.0 && health < 80.0) healths = ""COL_STATUS3"Среднее";
+	if(health >= 11.0 && health < 50.0) healths = ""COL_STATUS5"Плохое";
+	if(health > 0.0 && health < 11.0) healths = ""COL_STATUS6"Критическое";
 		
-	if(0 < PlayerInfo[playerid][pHunger] <=3600) hunger = ""COL_STATUS6"Голодание";
-	if(3600 < PlayerInfo[playerid][pHunger] <=7200)  hunger = ""COL_STATUS5"Жутко голоден";
-	if(7200 < PlayerInfo[playerid][pHunger] <=10800) hunger = ""COL_STATUS4"Нужно плотно поесть";
-	if(10800 < PlayerInfo[playerid][pHunger] <=14400) hunger = ""COL_STATUS3"Нужно поесть";
-	if(14400 < PlayerInfo[playerid][pHunger] <=18000) hunger = ""COL_STATUS2"Нужно немного перекусить";
-	if(18000 < PlayerInfo[playerid][pHunger] <=25200) hunger = ""COL_STATUS1"Сыт";
+	if(PlayerInfo[playerid][pHunger] > 0 && PlayerInfo[playerid][pHunger] <=3600) hunger = ""COL_STATUS6"Голодание";
+	if(PlayerInfo[playerid][pHunger] > 3600 && PlayerInfo[playerid][pHunger] <=7200)  hunger = ""COL_STATUS5"Жутко голоден";
+	if(PlayerInfo[playerid][pHunger] > 7200 && PlayerInfo[playerid][pHunger] <=10800) hunger = ""COL_STATUS4"Нужно плотно поесть";
+	if(PlayerInfo[playerid][pHunger] > 10800 && PlayerInfo[playerid][pHunger] <=14400) hunger = ""COL_STATUS3"Нужно поесть";
+	if(PlayerInfo[playerid][pHunger] > 14400 && PlayerInfo[playerid][pHunger] <=18000) hunger = ""COL_STATUS2"Нужно немного перекусить";
+	if(PlayerInfo[playerid][pHunger] > 18000 && PlayerInfo[playerid][pHunger] <=25200) hunger = ""COL_STATUS1"Сыт";
 	
-	if(0 < PlayerInfo[playerid][pEndurance] <=3600) endurance = ""COL_STATUS6"Переутомление";
-	if(3600 < PlayerInfo[playerid][pEndurance] <=7200)  endurance = ""COL_STATUS5"Недосыпание";
-	if(7200 < PlayerInfo[playerid][pEndurance] <=10800) endurance = ""COL_STATUS4"Нужно поспать";
-	if(10800 < PlayerInfo[playerid][pEndurance] <=14400) endurance = ""COL_STATUS3"Нужно отдохнуть";
-	if(14400 < PlayerInfo[playerid][pEndurance] <=18000) endurance = ""COL_STATUS2"Нужно немного расслабиться";
-	if(18000 < PlayerInfo[playerid][pEndurance] <=25200) endurance = ""COL_STATUS1"Полон сил";
+	if(PlayerInfo[playerid][pEndurance] > 0 && PlayerInfo[playerid][pEndurance] <=3600) endurance = ""COL_STATUS6"Переутомление";
+	if(PlayerInfo[playerid][pEndurance] > 3600 && PlayerInfo[playerid][pEndurance] <=7200)  endurance = ""COL_STATUS5"Недосыпание";
+	if(PlayerInfo[playerid][pEndurance] > 7200 && PlayerInfo[playerid][pEndurance] <=10800) endurance = ""COL_STATUS4"Нужно поспать";
+	if(PlayerInfo[playerid][pEndurance] > 10800 && PlayerInfo[playerid][pEndurance] <=14400) endurance = ""COL_STATUS3"Нужно отдохнуть";
+	if(PlayerInfo[playerid][pEndurance] > 14400 && PlayerInfo[playerid][pEndurance] <=18000) endurance = ""COL_STATUS2"Нужно немного расслабиться";
+	if(PlayerInfo[playerid][pEndurance] > 18000 && PlayerInfo[playerid][pEndurance] <=25200) endurance = ""COL_STATUS1"Полон сил";
 				
-	format(d35, sizeof(d35), D35, hunger, endurance, healths, money, carkey, org);
-	format(d36, sizeof(d36), D36, battery);
-	ShowPlayerDialog(playerid, DIALOG_ID_PLAYERINFODIALOG, D_S_T, d36, d35, "Выйти", "Назад");
+	format(d35, sizeof(d35), D35, hunger, endurance, healths);
+	ShowPlayerDialog(playerid, DIALOG_ID_PLAYERINFODIALOG, D_S_T,""COL_ORANGE"Информация о Вас",d35,"Выйти","Назад");
 	return true;
 }
 
@@ -4124,7 +3899,7 @@ SetPlayerPosCW(playerid, Float:x, Float:y, Float:z, Float:a, i, v)
 		IsPlayerBlackScreen[playerid] = true;
 		
 		TogglePlayerControllable(playerid, false);		
-		SetTimerEx("TeleportCW", 500, 0, "iffffdd", playerid, x, y, z, a, i, v);
+		SetTimerEx("TeleportCW", 800, 0, "iffffdd", playerid, x, y, z, a, i, v);
 	}
     return 1;
 }
@@ -4141,8 +3916,8 @@ ShowFonForPlayer(playerid)
         PlayerTextDrawUseBox(playerid, fon_PTD[playerid], 1); 
         PlayerTextDrawBoxColor(playerid, fon_PTD[playerid], 255); 
 
-        FonBox[playerid] = 50; 
-        FonTimer[playerid] = SetTimerEx("@_FonTimer", true, 50, "ii", playerid, 1); 
+        FonBox[playerid] = 0; 
+        FonTimer[playerid] = SetTimerEx("@_FonTimer", true, 100, "ii", playerid, 1); 
     } 
 } 
 
@@ -4151,7 +3926,7 @@ HideFonForPlayer(playerid)
     if(FonBox[playerid] > 0) 
     { 		
         FonBox[playerid] = 255; 
-        FonTimer[playerid] = SetTimerEx("@_FonTimer", true, 50, "ii", playerid, 2); 
+        FonTimer[playerid] = SetTimerEx("@_FonTimer", true, 100, "ii", playerid, 2); 
     } 
 } 
 
@@ -4233,21 +4008,13 @@ StartEngine(vehicleid, playerid)
 {
 	if(Veh[vehicleid][vFuel] > 0)
 	{
-		static const
-			fmt_str0[] = "%s вставляет ключ в замок зажигания (Заводит двигатель).",
-			fmt_str1[] = "%s вытаскивает ключ из замка зажигания (Глушит двигатель).";
-		
-		const
-			size = sizeof(fmt_str1) + (MAX_PLAYER_NAME+1-2);
-		
-		new string[size];
-		
+		new string[MAX_PLAYER_NAME+1+53];
 		if(Engine[vehicleid] == false)
 		{
 			SetVehicleParamsEx(vehicleid,true,lights,alarm,doors,bonnet,boot,objective);
 			Engine[vehicleid] = true;
 					
-			format(string,sizeof(string), fmt_str0 ,Name(playerid));
+			format(string,sizeof(string),"%s вставляет ключ в замок зажигания (Заводит двигатель).",Name(playerid));
 			ProxDetector(playerid,COLOR_PROX, string, 10.0);
 			return 1;
 		}
@@ -4256,7 +4023,7 @@ StartEngine(vehicleid, playerid)
 			SetVehicleParamsEx(vehicleid,false,lights,alarm,doors,bonnet,boot,objective);
 			Engine[vehicleid] = false;
 					
-			format(string,sizeof(string), fmt_str1, Name(playerid));
+			format(string,sizeof(string),"%s вытаскивает ключ из замка зажигания (Глушит двигатель).",Name(playerid));
 			ProxDetector(playerid,COLOR_PROX, string, 10.0);
 			return 1;
 		}
@@ -4324,65 +4091,43 @@ public PlayerUpdate(playerid)
 {
 	if(gPlayerLogged[playerid] == false) return 1;
 	
-	//new check [20];		format(check,sizeof(check),"%.1f %d", PlayerInfo[playerid][pHP], PlayerTimerIDTimer60Second); 		GameTextForPlayer(playerid, check, 1000, 3);	
+	new check [20];		format(check,sizeof(check),"H: %d E: %d", PlayerInfo[playerid][pHunger],PlayerInfo[playerid][pEndurance]); 		GameTextForPlayer(playerid, check, 1000, 3);	
 	
 	if (PlayerInfo[playerid][pMoney] != GetPlayerMoney(playerid))
 	{
 		ResetPlayerMoney(playerid);
 		GivePlayerMoney(playerid, PlayerInfo[playerid][pMoney]);
-	}
-	
-	new Float:health;				
-	if (PlayerInfo[playerid][pHP] != GetPlayerHealth(playerid, health))
-	{
-		SetPlayerHealth(playerid, PlayerInfo[playerid][pHP]);
-	}
-	
-	if(PlayerInfo[playerid][pHP] < 0) PlayerInfo[playerid][pHP] = 1;
+	}	
 	
 	SavePlayer(playerid);
 	
-	
 	if(PlayerTimerIDTimer1Second == 4)
     {	
-		if(PlayerInfo[playerid][pEndurance] > PlayerInfo[playerid][pEnduranceMax]) 
-			PlayerInfo[playerid][pEndurance] = PlayerInfo[playerid][pEnduranceMax];
+
+		if(PlayerInfo[playerid][pEndurance] > PlayerInfo[playerid][pEnduranceMax]) PlayerInfo[playerid][pEndurance] = PlayerInfo[playerid][pEnduranceMax];
 		
-		if(PlayerInfo[playerid][pHunger] > SEVENHOURS) 
-			PlayerInfo[playerid][pHunger] = SEVENHOURS;
+		if(PlayerInfo[playerid][pHunger] > SEVENHOURS) PlayerInfo[playerid][pHunger] = SEVENHOURS;
 			
 		if(PlayerInfo[playerid][pHunger] > 0)
 		{
-			GiveHunger(playerid, -1);
+			PlayerInfo[playerid][pHunger] --;
 		}
 		
 		if(PlayerInfo[playerid][pEndurance] > 0)
 		{
-			GiveEndurance(playerid, -1);
+			PlayerInfo[playerid][pEndurance] --;
 			
 			if(PlayerInfo[playerid][pHunger] <= FIVEHOURS) GiveEndurance(playerid, -1);
 			if(PlayerInfo[playerid][pHunger] <= FOURHOURS) GiveEndurance(playerid, -1);
 			if(PlayerInfo[playerid][pHunger] <= THREEHOURS) GiveEndurance(playerid, -2);
-			if(PlayerInfo[playerid][pHunger] <= TWOHOURS) GiveEndurance(playerid, -2);				
+			if(PlayerInfo[playerid][pHunger] <= TWOHOURS) GiveEndurance(playerid, -2);
 			if(PlayerInfo[playerid][pHunger] <= ONEHOURS) GiveEndurance(playerid, -3);
 			
 			if(IsPlayerJump(playerid)) GiveEndurance(playerid, -2);
 			
 			if(IsPlayerRun(playerid)) GiveEndurance(playerid, -1);
-				
-			if(PlayerInfo[playerid][pEndurance] <= ONEHOURS)
-			{
-				PlayerTimerIDTimer60Second ++;
-				if(PlayerTimerIDTimer60Second == 60)
-				{				
-					PlayerInfo[playerid][pHP] --;
-					PlayerTimerIDTimer60Second = 0;
-				}
-			}				
-		}		
+		}
 		
-		if(PlayerInfo[playerid][pAPEDBattery] > TENHOURS) 
-			PlayerInfo[playerid][pAPEDBattery] = TENHOURS;
 		if(PlayerInfo[playerid][pAPED] != 0) PlayerInfo[playerid][pAPEDBattery] --;
 		
 		
@@ -4617,9 +4362,6 @@ public TimeWood(playerid)
         return true;
 }
 
-forward UnfreezeTazer(playerid);
-public UnfreezeTazer(playerid)
-    return TogglePlayerControllable(playerid, 1);  
 
 forward TeleportCW(playerid, Float:x, Float:y, Float:z, Float:a, i, v);
 public TeleportCW(playerid, Float:x, Float:y, Float:z, Float:a, i, v)
@@ -4738,3 +4480,4 @@ Hook_ResetPlayerMoney(playerid)
     PlayerMoney[playerid] = 0;
     return ResetPlayerMoney(playerid);
 }
+
