@@ -21,7 +21,7 @@
 						5. Чтобы вступить в организацию нужно выучиться в универе, переменные для каждой фракции. 
       
 APED 'Angel Pine Electrical Document':  1. Можно открыть раздвигающиеся ворота дистанционно.
-										2. Сделать батарею, которая разряжается. Заряжать можно дома и в каких нибудь местах. 
+										2. Батарею заряжать можно дома и в каких нибудь местах. 
 
 Система смерти, ранений и тд.
 
@@ -30,7 +30,7 @@ APED 'Angel Pine Electrical Document':  1. Можно открыть раздвигающиеся ворота д
 
 Финансы: 1. Можно брать кредит с 18 лет и если есть работа 
 
-Система голода: максимально 7 часов
+Система голода: 
 
 Учиться разным стилям боя
 
@@ -48,13 +48,21 @@ APED 'Angel Pine Electrical Document':  1. Можно открыть раздвигающиеся ворота д
 /////////////////////////////////////////////////////////////////
 
 #include <a_samp>
+
+#undef MAX_PLAYERS
+#define MAX_PLAYERS 5
+#undef MAX_VEHICLES
+#define MAX_VEHICLES 100
+
+#define FIXES_ServerVarMsg 0
+#include <fixes> 
 #include <foreach>  
 #include <streamer>
 #include <sscanf2>
 //#include <nex-ac>
 #include <a_actor>
 #include <mxINI>
-#include <izcmd>
+#include <dc_cmd>  
 #include <objects>
 #include <keypad>
 
@@ -116,14 +124,9 @@ main()
 #define VBUYTOCARKEY 100
 #define VBUYTORENT 150
 
-#undef MAX_PLAYERS
-#define MAX_PLAYERS 5
-#undef MAX_VEHICLES
-#define MAX_VEHICLES 100
 #define Name(%1) PlayerInfo[%1][pName]
 #define MAX_HOUSES 50
 #define MAX_ENTERS 50
-#define MAX_CHECKPOINTS 23
 
 #define ONEHOURS 3600
 #define TWOHOURS 7200
@@ -180,6 +183,11 @@ new bool:SpecON[MAX_PLAYERS];
 new bool:engine,lights,alarm,doors,bonnet,boot,objective;
 new bool:animloading[MAX_PLAYERS];
 new bool:Engine[MAX_VEHICLES]; 
+
+static updatepositiontimestamp[MAX_PLAYERS]; 
+#if    !defined    AC_UP__IGNORE_TIME
+    #define    AC_UP__IGNORE_TIME    2000
+#endif
 
 new bool:tazer_status[MAX_PLAYERS char];
 
@@ -648,37 +656,6 @@ public OnPlayerConnect(playerid)
 	FonBox[playerid] = 0; 
     PlayerTextDrawDestroy(playerid, fon_PTD[playerid]);  
     
-    PlayerInfo[playerid][pAdmin] = 0;
-    PlayerInfo[playerid][pMoney] = 0;
-    PlayerInfo[playerid][pSex] = 0;
-    PlayerInfo[playerid][pSkin] = 0;
-    PlayerInfo[playerid][pReg] = 0;
-    PlayerInfo[playerid][pPos_x] = -2254.1497;
-	PlayerInfo[playerid][pPos_y] = -2192.2520;
-	PlayerInfo[playerid][pPos_z] = 34.9766;
-	PlayerInfo[playerid][pFa] = 119.6331;
-	PlayerInfo[playerid][pInt] = 0;
-	PlayerInfo[playerid][pWorld] = 0;
-	PlayerInfo[playerid][pCarKey] = 0;
-	PlayerInfo[playerid][pMoneyDolg] = 0;
-	PlayerInfo[playerid][pMember] = 0;
-	PlayerInfo[playerid][pLeader] = 0;
-	PlayerInfo[playerid][pJob] = 0;
-	PlayerInfo[playerid][pMemberSkin] = 0;
-	PlayerInfo[playerid][pRank] = 0;
-	PlayerInfo[playerid][pMemberWarn] = 0;
-	PlayerInfo[playerid][pRankName] = 0;
-	PlayerInfo[playerid][pAPED] = 0;
-	PlayerInfo[playerid][pAPEDBattery] = 0;
-	PlayerInfo[playerid][pHunger] = 0;
-	PlayerInfo[playerid][pEndurance] = 0;
-	PlayerInfo[playerid][pEnduranceMax] = 0;
-	PlayerInfo[playerid][pHP] = 0.0;
-	PlayerInfo[playerid][pHouse] = 0;
-	
-	//for(new pInfo:i; i<pInfo; ++i) PlayerInfo[playerid][i] = 0;  
-
-    
     box[playerid] = TextDrawCreate(618,389,"_");
 	TextDrawLetterSize(box[playerid],0.5,2.999999);
 	TextDrawUseBox(box[playerid],1);
@@ -710,6 +687,8 @@ public OnPlayerDisconnect(playerid, reason)
     SavePlayer(playerid);
     gPlayerLogged[playerid] = false;
 	
+	memset(PlayerInfo[playerid],0, pInfo);
+	
 	KillTimer(PlayerTimerID[playerid]);
 	
 	return 1;
@@ -717,6 +696,8 @@ public OnPlayerDisconnect(playerid, reason)
 
 public OnPlayerSpawn(playerid)
 {
+	updatepositiontimestamp[playerid] = GetTickCount()+AC_UP__IGNORE_TIME;
+	
 	if(PlayerInfo[playerid][pReg] == 1)
 	{
 		SetSkin(playerid);
@@ -731,7 +712,7 @@ public OnPlayerSpawn(playerid)
 			SetPlayerInterior(playerid, 3);
 			SetPlayerVirtualWorld(playerid, 1);
 			
-			PlayerInfo[playerid][pHP] = 10;
+			PlayerInfo[playerid][pHP] = 10.0;
 			
 			PlayerDeath[playerid] = false;
 		}
@@ -777,7 +758,7 @@ public OnPlayerSpawn(playerid)
 public OnPlayerDeath(playerid, killerid, reason)
 {
 	PlayerDeath[playerid] = true;
-	PlayerInfo[playerid][pHP] = 1;
+	PlayerInfo[playerid][pHP] = 1.0;
 	DeletePVar(playerid, "IsPlayerSpawn");
 	return 1;
 }
@@ -1354,8 +1335,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 			return 1;
 		}
 		
-		new params[1];
-		cmd_vmenu(playerid,params);
+		cmd::vmenu(playerid, "");
 	}
 	
 	if (newkeys == 2)
@@ -1384,9 +1364,14 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	if (newkeys == KEY_NO)
 	{		
 		ShowPlayerAPEDDialog(playerid);
+		
+		new string[MAX_PLAYER_NAME+1+38];
+				
+		format(string, sizeof(string), "%s достает свой APED и смотрит на его экран.", Name(playerid));
+		ProxDetector(playerid, COLOR_PROX, string, 10);
 	}
 	
-    if (newkeys == 1024)
+    if (newkeys == 1024 && !IsPlayerBlackScreen[playerid])
    	{
     	for(new i = 0; i < MAX_HOUSES;i++)
 		{
@@ -1616,82 +1601,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
   		{
     		if(response)
       		{
-					new carid = GetAroundPlayerVehicleID(playerid, 4.0),
-					str[128];
-					
-					switch(listitem)
-					{
-                            case 0://двери отк
-                            {
-                                if(Veh[carid][vLock] == 1)
-                                {
-	                                Veh[carid][vLock] = 0;
-									
-		                            GetVehicleParamsEx(carid,engine,lights,alarm,doors,bonnet,boot,objective);
-		                            SetVehicleParamsEx(carid,engine,lights,alarm,false,bonnet,boot,objective);
-									
-		                            format(str,sizeof(str),"%s открывает двери транспортного средства.",Name(playerid));
-		    						ProxDetector(playerid,COLOR_PROX, str, 10.0);
-									
-		    						SaveVeh();
-								}
-                            }
-                            case 1://двери зак
-                            {
-                                if(Veh[carid][vLock] == 0)
-                                {
-	                                Veh[carid][vLock] = 1;
-									
-		                            GetVehicleParamsEx(carid,engine,lights,alarm,doors,bonnet,boot,objective);
-		                            SetVehicleParamsEx(carid,engine,lights,alarm,true,bonnet,boot,objective);
-									
-		                            format(str,sizeof(str),"%s блокирует двери транспортного средства.",Name(playerid));
-									ProxDetector(playerid,COLOR_PROX, str, 10.0);
-									
-		    						SaveVeh();
-								}
-                            }
-                            case 2://багаж вкл
-                            {
-								if(boot) return 1;
-								
-                               	GetVehicleParamsEx(carid,engine,lights,alarm,doors,bonnet,boot,objective);
-	                            SetVehicleParamsEx(carid,engine,lights,alarm,doors,bonnet,true,objective);
-								
-	                            format(str,sizeof(str),"%s открывает багажник транспортного средства.",Name(playerid));
-	    						ProxDetector(playerid,COLOR_PROX, str, 10.0);
-                            }
-                            case 3://багаж выкл
-                            {
-								if(!boot) return 1;
-								
-	                            GetVehicleParamsEx(carid,engine,lights,alarm,doors,bonnet,boot,objective);
-	                            SetVehicleParamsEx(carid,engine,lights,alarm,doors,bonnet,false,objective);
-								
-	                            format(str,sizeof(str),"%s закрывает багажник транспортного средства.",Name(playerid));
-	    						ProxDetector(playerid,COLOR_PROX, str, 10.0);
-                            }
-                            case 4://капот вкл
-                            {
-								if(bonnet) return 1;
-								
-	                            GetVehicleParamsEx(carid,engine,lights,alarm,doors,bonnet,boot,objective);
-	                            SetVehicleParamsEx(carid,engine,lights,alarm,doors,true,boot,objective);
-								
-	                            format(str,sizeof(str),"%s открывает капот транспортного средства.",Name(playerid));
-	    						ProxDetector(playerid,COLOR_PROX, str, 10.0);
-                            }
-                            case 5://капот выкл
-                            {
-								if(!bonnet) return 1;
-								
-								GetVehicleParamsEx(carid,engine,lights,alarm,doors,bonnet,boot,objective);
-	                            SetVehicleParamsEx(carid,engine,lights,alarm,doors,false,boot,objective);
-								
-	                            format(str,sizeof(str),"%s закрывает капот транспортного средства.",Name(playerid));
-								ProxDetector(playerid,COLOR_PROX, str, 10.0);
-                            }
-					}
+				new carid = GetAroundPlayerVehicleID(playerid, 4.0);
+				
+				if(listitem >= 0 && listitem <= 6)
+                {
+                    new params[7];
+                    GetVehicleParamsEx(carid, params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
+                    params[listitem] = !params[listitem];
+                    SetVehicleParamsEx(carid, params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
+						
+					ShowPlayerVehicleDialog(playerid);
+                }
 			}
 		}
 		
@@ -1861,7 +1781,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			else
 			{
 				static const
-					fmt_dlg_header[] = "Назначить лидером игрока "COL_WHITE"[%d] %s",
+					fmt_dlg_header[] = ""COL_ORANGE"Назначить лидером игрока "COL_WHITE"[%d] %s",
 					fmt_dlg[] = "%s%s\n";
 
 				new
@@ -2413,6 +2333,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}					
 				}
 			}
+			else 
+			{
+				new string[MAX_PLAYER_NAME+1 -2 +42];
+				
+				format(string, sizeof(string), "%s поднимает взгляд с экрана и убирает APED.", Name(playerid));
+				ProxDetector(playerid, COLOR_PROX, string, 10);
+			}
 			return 1;
 		}
 		
@@ -2633,19 +2560,19 @@ public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart)
             {
                 case BODY_PART_TORSO: // туловище
                 {
-                    PlayerInfo[playerid][pHP] -= 75;
+                    PlayerInfo[playerid][pHP] -= 75.0;
                 }
                 case BODY_PART_GROIN: // пах
                 {
-                    PlayerInfo[playerid][pHP] -= 35;
+                    PlayerInfo[playerid][pHP] -= 35.0;
                 }
                 case BODY_PART_LEFT_ARM, BODY_PART_RIGHT_ARM, BODY_PART_LEFT_LEG, BODY_PART_RIGHT_LEG: // руки, ноги
                 {
-                    PlayerInfo[playerid][pHP] -= 50;
+                    PlayerInfo[playerid][pHP] -= 50.0;
                 }
                 case BODY_PART_HEAD: // голова
                 {
-                    PlayerInfo[playerid][pHP] -= 100;
+                    PlayerInfo[playerid][pHP] -= 100.0;
                 }
             }
         }
@@ -2654,6 +2581,15 @@ public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart)
     return 1;
 }
 
+public OnPlayerCommandPerformed(playerid, cmdtext[], success)
+{
+    if(success == -1) // если команда не найдена
+    {
+        return SendClientMessage(playerid, COLOR_GREY, "Такой команды не существует.");
+    }
+    return 1;
+}  
+
 
 /////////////////////////////////////////////                    Команды Команды               / ///////////////////////////
 
@@ -2661,13 +2597,10 @@ public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart)
 
 CMD:vmenu(playerid, params[])
 {
-	if(GetAroundPlayerVehicleID(playerid, 4.0) == PlayerInfo[playerid][pCarKey] || 
-	Veh[GetAroundPlayerVehicleID(playerid, 4.0)][vBuy] == PlayerInfo[playerid][pMember])
- 	{
-  		new listitems[] = ""COL_BLUE"[1] - Открыть двери\n[2] - Закрыть двери\n[3] - Открыть багажник\n[4] - Закрыть багажник\n[5] - Открыть капот\n[6] - Закрыть капот\n";
-    	ShowPlayerDialog(playerid, DIALOG_ID_VMENU, D_S_L, ""COL_ORANGE"Функции транспорта", listitems, "Выбрать", "Отмена");
-    }
-    return 1;
+	new carid = GetAroundPlayerVehicleID(playerid, 4.0);
+	if(carid == PlayerInfo[playerid][pCarKey] || Veh[carid][vBuy] == PlayerInfo[playerid][pMember])
+		return ShowPlayerVehicleDialog(playerid);
+	return 1;
 }
 
 CMD:refill(playerid, params[])
@@ -3318,6 +3251,12 @@ CMD:cexit(playerid, params[])
     return 1;
 }
 
+CMD:test(playerid, params[])
+{
+    ViewFactions(playerid);
+    return 1;
+}
+
 /////////////////////////////////////////////        ПОЛЬЗОВАТЕЛЬСКИЕ
 
 
@@ -3372,12 +3311,6 @@ CMD:report(playerid, params[])
     MessageToAdmin(COLOR_WHITE, string);
 	
     SendClientMessage(playerid, COLOR_GREEN, "Вы успешно отправили сообщение администрации.");
-    return 1;
-}
-
-CMD:test(playerid, params[])
-{
-    ViewFactions(playerid);
     return 1;
 }
 
@@ -3522,7 +3455,7 @@ OnPlayerRegister(playerid, password[])
 		PlayerInfo[playerid][pSex] = GetPVarInt(playerid, "Sex");
 		PlayerInfo[playerid][pSkin] = GetPVarInt(playerid, "Skin");
 		PlayerInfo[playerid][pMoney] = 100;
-		PlayerInfo[playerid][pHP] = 100;
+		PlayerInfo[playerid][pHP] = 100.0;
 		PlayerInfo[playerid][pReg] = 1;	
 		
 		PlayerInfo[playerid][pHunger] = SEVENHOURS;
@@ -3591,15 +3524,21 @@ OnPlayerLogin(playerid,password[])
 UpdatePlayerPosition(playerid)
 {
     if(GetPVarInt(playerid, "IsPlayerSpawn") == 0) return 1;
-    new Float:x, Float:y, Float:z,Float:fa;
-    GetPlayerPos(playerid,x,y,z);
-    GetPlayerFacingAngle(playerid, fa);
-    PlayerInfo[playerid][pPos_x] = x;
-    PlayerInfo[playerid][pPos_y] = y;
-    PlayerInfo[playerid][pPos_z] = z;
-    PlayerInfo[playerid][pFa] = fa;
-    PlayerInfo[playerid][pInt] = GetPlayerInterior(playerid);
-    PlayerInfo[playerid][pWorld] = GetPlayerVirtualWorld(playerid);
+	
+    if(GetTickCount() > updatepositiontimestamp[playerid])
+	{
+		new Float:x, Float:y, Float:z,Float:fa;
+		
+		GetPlayerPos(playerid,x,y,z);
+		GetPlayerFacingAngle(playerid, fa);
+		
+		PlayerInfo[playerid][pPos_x] = x;
+		PlayerInfo[playerid][pPos_y] = y;
+		PlayerInfo[playerid][pPos_z] = z;
+		PlayerInfo[playerid][pFa] = fa;
+		PlayerInfo[playerid][pInt] = GetPlayerInterior(playerid);
+		PlayerInfo[playerid][pWorld] = GetPlayerVirtualWorld(playerid);
+	}
     return 1;
 }
 
@@ -3868,7 +3807,7 @@ split(const strsrc[], strdest[][], delimiter)
     return 1;
 }
 
-ProxDetector(playerid,color,msg[],Float:radius)
+/*ProxDetector(playerid,color,msg[],Float:radius)
 {
 	new Float:x,Float:y,Float:z;
 	GetPlayerPos(playerid,x,y,z);
@@ -3878,9 +3817,56 @@ ProxDetector(playerid,color,msg[],Float:radius)
 		SendClientMessage(i,color,msg);    
 	}
 	return 1;
+}*/
+
+ProxDetector(playerid, color, string[], Float:max_range, Float:max_ratio = 1.6)
+{
+    new
+        Float:pos_x,
+        Float:pos_y,
+        Float:pos_z,
+        Float:range,
+        Float:range_ratio,
+        Float:range_with_ratio,
+        clr_r, clr_g, clr_b,
+        Float:color_r, Float:color_g, Float:color_b;
+ 
+    if (!GetPlayerPos(playerid, pos_x, pos_y, pos_z)) {
+        return 0;
+    }
+ 
+    color_r = float(color >> 24 & 0xFF);
+    color_g = float(color >> 16 & 0xFF);
+    color_b = float(color >> 8 & 0xFF);
+    range_with_ratio = max_range * max_ratio;
+ 
+#if defined foreach
+    foreach (new i : Player) {
+#else
+    for (new i = GetPlayerPoolSize(); i != -1; i--) {
+#endif
+        if (!IsPlayerStreamedIn(playerid, i)) {
+            continue;
+        }
+ 
+        range = GetPlayerDistanceFromPoint(i, pos_x, pos_y, pos_z);
+        if (range > max_range) {
+            continue;
+        }
+ 
+        range_ratio = (range_with_ratio - range) / range_with_ratio;
+        clr_r = floatround(range_ratio * color_r);
+        clr_g = floatround(range_ratio * color_g);
+        clr_b = floatround(range_ratio * color_b);
+ 
+        SendClientMessage(i, (color & 0xFF) | (clr_b << 8) | (clr_g << 16) | (clr_r << 24), string);
+    }
+ 
+    SendClientMessage(playerid, color, string);
+    return 1;
 }
 
-stock GetAroundPlayerVehicleID(playerid, Float:radius)
+GetAroundPlayerVehicleID(playerid, Float:radius)
 {
     new Float:vp[3],vehid = INVALID_VEHICLE_ID;
     for(new i = MAX_VEHICLES; i != 0; --i)
@@ -4069,11 +4055,11 @@ ShowPlayerPlayerInfoDialog(playerid)
 			"\n"COL_BLUE"Ключи от автомобиля №: \t%d"\
 			"\n"COL_BLUE"Организация: \t%s";
 			
-	new d35[512],
-		d36[64],
-		hunger[40],
-		endurance[40],
-		healths[25],
+	new d35[24+26+35+38+38+28 + 10 + MAX_FRACTION_NAME_LENGTH +37+39+24],
+		d36[69-6+4],
+		hunger[37],
+		endurance[39],
+		healths[24],
 		money,
 		carkey,
 		org[MAX_FRACTION_NAME_LENGTH],
@@ -4112,6 +4098,42 @@ ShowPlayerPlayerInfoDialog(playerid)
 	format(d35, sizeof(d35), D35, hunger, endurance, healths, money, carkey, org);
 	format(d36, sizeof(d36), D36, battery);
 	ShowPlayerDialog(playerid, DIALOG_ID_PLAYERINFODIALOG, D_S_T, d36, d35, "Выйти", "Назад");
+	return true;
+}
+
+ShowPlayerVehicleDialog(playerid)
+{
+	new carid = GetAroundPlayerVehicleID(playerid, 4.0);
+	GetVehicleParamsEx(carid, engine, lights, alarm, doors, bonnet, boot, objective);
+		
+	static D37[] = 
+				""COL_BLUE"Функция: \t"COL_WHITE"Состояние:"\
+				"\n"COL_BLUE"Двигатель: \t%s"\
+				"\n"COL_BLUE"Фары: \t%s"\
+				"\n"COL_BLUE"Сигнализация: \t%s"\
+				"\n"COL_BLUE"Двери: \t%s"\			
+				"\n"COL_BLUE"Капот: \t%s"\
+				"\n"COL_BLUE"Багажник: \t%s"\
+				"\n"COL_BLUE"Поиск автомобиля по GPS: \t%s";
+				
+	new d37[42+26+21+29+22+22+25+40-14+21+22+25+27+19+19+24],
+		d38[42-4+4+20+1],
+		status1[21], status2[22], status3[25], status4[27], status5[19], status6[19], status7[24];
+		
+				
+	static D38[] = ""COL_ORANGE"Состояние транспорта: "COL_WHITE"[ID:%d] %s";
+		
+	status1 = (engine) ?  (""COL_STATUS1"Заведен") : (""COL_STATUS6"Заглушен");
+	status2 = (lights) ?  (""COL_STATUS1"Включены") : (""COL_STATUS6"Выключены");
+	status3 = (alarm) ?  (""COL_STATUS1"Активирована") : (""COL_STATUS6"Отключена");
+	status4 = (doors) ?  (""COL_STATUS1"Заблокированы") : (""COL_STATUS6"Разблокированы");
+	status5 = (bonnet) ?  (""COL_STATUS1"Открыт") : (""COL_STATUS6"Закрыт");
+	status6 = (boot) ?  (""COL_STATUS1"Открыт") : (""COL_STATUS6"Закрыт");
+	status7 = (objective) ?  (""COL_STATUS1"Активирован") : (""COL_STATUS6"Отключен");
+					
+	format(d37, sizeof(d37), D37, status1, status2, status3, status4, status5, status6, status7);
+	format(d38, sizeof(d38), D38, carid, VehicleNames[GetVehicleModel(carid)-400]);
+	ShowPlayerDialog(playerid, DIALOG_ID_VMENU, D_S_TH, d38, d37, "Выбрать", "Выход");
 	return true;
 }
 
@@ -4286,16 +4308,57 @@ IsPlayerNearPlayer(Float:rad, playerid, targetid)
 }
 
 GiveHunger(playerid, hunger)
-{
-	PlayerInfo[playerid][pHunger] += hunger;
-	return 1;
-}
+	return PlayerInfo[playerid][pHunger] += hunger;
 
 GiveEndurance(playerid, endurance)
-{
-	PlayerInfo[playerid][pEndurance] += endurance;
-	return 1;
-}
+	return PlayerInfo[playerid][pEndurance] += endurance;
+
+memset(aArray[], iValue, iSize = sizeof(aArray)) { 
+    new iAddress; 
+    #emit LOAD.S.pri 12 
+    #emit STOR.S.pri iAddress 
+    iSize *= 4; 
+    while (iSize > 0) { 
+        if (iSize >= 4096) { 
+            #emit LOAD.S.alt iAddress 
+            #emit LOAD.S.pri iValue 
+            #emit FILL 4096 
+            iSize -= 4096; 
+            iAddress += 4096; 
+        } else if (iSize >= 1024) { 
+            #emit LOAD.S.alt iAddress 
+            #emit LOAD.S.pri iValue 
+            #emit FILL 1024 
+            iSize -= 1024; 
+            iAddress += 1024; 
+        } else if (iSize >= 256) { 
+            #emit LOAD.S.alt iAddress 
+            #emit LOAD.S.pri iValue 
+            #emit FILL 256 
+            iSize -= 256; 
+            iAddress += 256; 
+        } else if (iSize >= 64) { 
+            #emit LOAD.S.alt iAddress 
+            #emit LOAD.S.pri iValue 
+            #emit FILL 64 
+            iSize -= 64; 
+            iAddress += 64; 
+        } else if (iSize >= 16) { 
+            #emit LOAD.S.alt iAddress 
+            #emit LOAD.S.pri iValue 
+            #emit FILL 16 
+            iSize -= 16; 
+            iAddress += 16; 
+        } else { 
+            #emit LOAD.S.alt iAddress 
+            #emit LOAD.S.pri iValue 
+            #emit FILL 4 
+            iSize -= 4; 
+            iAddress += 4; 
+        } 
+    } 
+    #pragma unused aArray 
+}  
 
 FixText(string[]) 
 { 
@@ -4338,7 +4401,7 @@ public PlayerUpdate(playerid)
 		SetPlayerHealth(playerid, PlayerInfo[playerid][pHP]);
 	}
 	
-	if(PlayerInfo[playerid][pHP] < 0) PlayerInfo[playerid][pHP] = 1;
+	if(PlayerInfo[playerid][pHP] < 0.0) PlayerInfo[playerid][pHP] = 1.0;
 	
 	SavePlayer(playerid);
 	
@@ -4375,7 +4438,7 @@ public PlayerUpdate(playerid)
 				PlayerTimerIDTimer60Second ++;
 				if(PlayerTimerIDTimer60Second == 60)
 				{				
-					PlayerInfo[playerid][pHP] --;
+					PlayerInfo[playerid][pHP] -= 1.0;
 					PlayerTimerIDTimer60Second = 0;
 				}
 			}				
