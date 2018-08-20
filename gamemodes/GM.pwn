@@ -1,7 +1,5 @@
 //////////////////////////////////////////////////////////////////
 /*
-Онлайн организации не показывает
-
 
 АРЕНДА МОПЕДА: 	1. Сделать таймер для аренды мопедов (переменная для отсчета времени оставшейся аренды (чтобы при перезаходе можно было сесть на свой мопед))
 				2. Мопед надо вернуть, иначе штраф.
@@ -65,6 +63,7 @@ APED 'Angel Pine Electrical Document':  1. Можно открыть раздвигающиеся ворота д
 #include <dc_cmd>  
 #include <objects>
 #include <keypad>
+
 
 main()
 {}
@@ -206,8 +205,8 @@ new
 new drev = 0; // для системы дерева
 new kazna = 0; // для системы казны
 
-new ActorWoodMan;
-new ActorKapitoliyWomen;
+new ActorWoodMan, ActorKapitoliyWomen, ActorAPPD, ActorRestaraunt, ActorZero, ActorHospital;
+
 new IDFrac[MAX_PLAYERS] = 0;
 new IDLeader = 0;
 new Text3D:sellveh[MAX_VEHICLES];
@@ -289,7 +288,8 @@ enum vInfo
     vPrice,
     vBuy,
     vLock,
-    vFuel
+    vFuel,
+	Float:vHP
 }
 new Veh[MAX_VEHICLES][vInfo];
 new LastCar;// Максимальное колличество авто
@@ -378,6 +378,9 @@ enum
 	DIALOG_ID_APEDMENU,
 	DIALOG_ID_APEDSETTINGS,
 	DIALOG_ID_VIEWONLINEFRACTION,
+	DIALOG_ID_APPDWEAPON,
+	DIALOG_ID_ADMINMENU,
+	DIALOG_ID_ADMINMENUTPLIST,
 };
 #define DIALOG_TYPE_MAIN 20044
 #define D_S_M DIALOG_STYLE_MSGBOX 
@@ -487,6 +490,7 @@ public OnGameModeInit()
 	CreatePickupWith3DText(1275, 254.8472,77.0973,1003.6406, "Раздевалка\n>> Нажмите Y <<", 0, 4.0); 
 	CreatePickupWith3DText(1275, 267.0403,118.3147,1004.6172, "Раздевалка\n>> Нажмите Y <<", 0, 4.0); 	
 	CreatePickupWith3DText(1275, 350.9631,188.9638,1019.9844, "Раздевалка\n>> Нажмите Y <<", 1, 4.0);
+	CreatePickupWith3DText(2061, 222.9965,79.8031,1005.0391, "Выдача оружия\n>> Нажмите Y <<", 0, 4.0);
 	
 	
 	
@@ -507,20 +511,43 @@ public OnGameModeInit()
 	
     ActorWoodMan = CreateActor(161, -1629.7593,-2233.2476,31.4766,135.0107);
     ApplyActorAnimation(ActorWoodMan, "PED", "idlestance_old", 3.9, 1, 0, 0, 0, 0);
-    ActorKapitoliyWomen = CreateActor(216, 359.7169,173.6097,1008.3893,268.1367);
+	
+    ActorKapitoliyWomen = CreateActor(141, 359.7169,173.6097,1008.3893,268.1367);
     ApplyActorAnimation(ActorKapitoliyWomen, "PED", "woman_idlestance", 3.9, 1, 0, 0, 0, 0);
+	
+	ActorAPPD = CreateActor(309, 220.8941,79.8343,1005.0391,270.7289);
+	ApplyActorAnimation(ActorAPPD, "DEALER", "DEALER_IDLE", 3.9, 1, 0, 0, 0, 0);
+	
+	ActorRestaraunt = CreateActor(189, -782.9186,498.3218,1371.7422,358.9113);
+	ApplyActorAnimation(ActorRestaraunt, "DEALER", "DEALER_IDLE_01", 3.9, 0, 0, 0, 0, 0);
+	
+	ActorZero = CreateActor(289, -2237.6453,128.5868,1035.4141,359.5548);
+	ApplyActorAnimation(ActorZero, "COP_AMBIENT", "Coplook_think", 3.9, 0, 0, 0, 0, 0);
+	
+	ActorHospital = CreateActor(308, 364.0134,169.4868,1019.9844,181.1555);
+	SetActorVirtualWorld(ActorHospital, 1);
+	
+	CreateActor(192, -28.6500,-186.8251,1003.5469,0.8175);
+	CreateActor(194, -2034.8375,-116.8023,1035.1719,274.6687);
+	CreateActor(219, 162.3062,-81.1858,1001.8047,180.4836);	
+	
 	ConnectNPC("TrainDriverLV","train_lv");
     
     blackmap = GangZoneCreate(-3000.0,-3000.0,3000.0,3000.0);
 	
-	for(new v; v < MAX_VEHICLES; v++)// цикл машин
-    {
+	for(new v; v < MAX_VEHICLES; v++)  
+	{ 		
         AddStaticVehicleEx(Veh[v][vModel],Veh[v][vVx],Veh[v][vVy],Veh[v][vVz],Veh[v][vVa],Veh[v][vColor],Veh[v][vColor2], 60000);
+		
 		if (Veh[v][vFuel] < 0) Veh[v][vFuel] = 0;
 		if (Veh[v][vFuel] > 100) Veh[v][vFuel] = 100;
+		if (Veh[v][vHP] < 1) Veh[v][vHP] = 1000.0;
 		
 		SetVehicleParamsEx(v,false,false,false,Veh[v][vLock],false,false,false);
+		SetVehicleHealth(v, Veh[v][vHP]);
 		Engine[v] = false;
+		
+		
 		if(Veh[v][vAdd] == 1 && Veh[v][vBuy] == 0)
         {
 			static const
@@ -590,11 +617,8 @@ public OnGameModeExit()
 {
     foreach(Player, i)
 	{
-		if(IsPlayerConnected(i))
-		{
-			SavePlayer(i);
-			gPlayerLogged[i] = false;
-		}
+		SavePlayer(i);
+		gPlayerLogged[i] = false;
 	}
 	
 	forEx(sizeof FerrisWheelObjects,x)DestroyObject(FerrisWheelObjects[x]);
@@ -707,10 +731,12 @@ public OnPlayerSpawn(playerid)
 	{
 		if(PlayerDeath[playerid])
 		{
-			SetPlayerPos(playerid,342.1416,161.8187,1019.9844);
-			SetPlayerFacingAngle(playerid, 182.8467); 
+			SetPlayerPos(playerid,343.2550,161.0479,1020.7661);
+			SetPlayerFacingAngle(playerid, 269.9050); 
 			SetPlayerInterior(playerid, 3);
 			SetPlayerVirtualWorld(playerid, 1);
+			
+			ApplyAnimation(playerid, "CRACK", "crckidle4", 4.1, 0, 1, 1, 1, 1, 1);
 			
 			PlayerInfo[playerid][pHP] = 10.0;
 			
@@ -765,6 +791,7 @@ public OnPlayerDeath(playerid, killerid, reason)
 
 public OnVehicleSpawn(vehicleid)
 {
+	SetVehicleHealth(vehicleid, Veh[vehicleid][vHP]);
 	Engine[vehicleid] = false;
 	return 1;
 }
@@ -883,7 +910,7 @@ public OnPlayerEnterRaceCheckpoint(playerid)
 			
 	  		if(IsPlayerAttachedObjectSlotUsed(playerid,1)) RemovePlayerAttachedObject(playerid,1);
 			
-		    ApplyAnimation( playerid, "CARRY", "putdwn", 4, 0, 1, 1, 0, 800);
+		    ApplyAnimation( playerid, "CARRY", "putdwn", 4.0, 0, 1, 1, 0, 800);
 			
 			GiveEndurance(playerid, -1);
 			
@@ -967,8 +994,26 @@ public OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
 	
-	if (HOLDING(KEY_SPRINT)) PlayerRun[playerid] = true;
-	if (RELEASED(KEY_SPRINT)) PlayerRun[playerid] = false;
+	if (HOLDING(KEY_SPRINT))
+	{
+		PlayerRun[playerid] = true;
+		
+		if(PlayerInfo[playerid][pEndurance] < TWOHOURS && !IsPlayerInAnyVehicle(playerid))
+		{
+			TogglePlayerControllable(playerid, 0);
+			ClearAnimations(playerid);
+			ApplyAnimation(playerid, "FAT", "IDLE_tired", 4.0, 0, 0, 0, 0, 0);			
+		}
+	}
+	if (RELEASED(KEY_SPRINT)) 
+	{
+		PlayerRun[playerid] = false;
+		
+		if(PlayerInfo[playerid][pEndurance] < TWOHOURS)
+		{
+			TogglePlayerControllable(playerid, 1);
+		}
+	}
 	
 	new vid = GetPlayerVehicleID(playerid);
     if (newkeys == KEY_LOOK_BEHIND && GetPlayerState(playerid) == PLAYER_STATE_DRIVER && !NoEngine(vid))
@@ -1013,10 +1058,20 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
         if(tazer_status{playerid})
         {
             new targetplayer = GetPlayerTargetPlayer(playerid);
-            if(targetplayer != INVALID_PLAYER_ID)
-            {
+            if(targetplayer != INVALID_PLAYER_ID && !GetPVarInt(targetplayer, "IsTazed") && GetPlayerWeapon(playerid) == 0)
+            {				
+				new string[23 + MAX_PLAYER_NAME*2];
+	
+				format(string, sizeof(string), "%s ударил электрошокером %s.", Name(playerid), Name(targetplayer));
+				ProxDetector(playerid, COLOR_PROX, string, 10);
+				
                 TogglePlayerControllable(targetplayer, 0);
-                SetTimerEx("UnfreezeTazer", 10000, 0, "%d", targetplayer);
+				ClearAnimations(targetplayer);
+				ApplyAnimation(targetplayer, "CRACK", "crckdeth1", 4.1, 0, 1, 1, 1, 1, 0);
+				
+				SetPVarInt(targetplayer, "IsTazed", 1);
+				
+                SetTimerEx("TogglePlayerControllablePublic", 10000, 0, "%d", targetplayer);
             }
         }
     }  
@@ -1264,7 +1319,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 
 	}
 	
-    if (newkeys == 65536)
+    if (newkeys == KEY_YES)
     {
 		if (!IsPlayerBlackScreen[playerid])
 		{
@@ -1277,11 +1332,26 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 			}
 		}
 		
+		if(IsPlayerInRangeOfPoint(playerid, 2.0, 222.9965,79.8031,1005.0391) && PlayerInfo[playerid][pMember] == 2)
+		{
+			static D39[] = 
+					""COL_WHITE"Привет, %s!\n\
+					Пришел получить свою амуницию и оружие?\n";
+					
+			new d39[26+43-2+MAX_PLAYER_NAME+1];
+			
+			format(d39, sizeof(d39), D39, Name(playerid));
+			
+			ShowPlayerDialog(playerid, DIALOG_ID_APPDWEAPON, D_S_M,""COL_ORANGE"Комната хранения оружия", d39, "Да", "Нет");
+			return 1;
+		}
+		
 		if(IsPlayerInRangeOfPoint(playerid, 3.0, -2032.4177,-116.3887,1035.1719))
 		{
 		    new str[95];
-		    format(str,sizeof(str), ""COL_BLUE"\nЗдравствуйте, у нас Вы можете арендовать мопед.\nСтоимость аренды мопеда: "COL_GREEN"%d $.",CENA_ARENDI);
-			ShowPlayerDialog(playerid, DIALOG_ID_RENTMOPED, D_S_M,""COL_ORANGE"Аренда мопеда",str,"Арендовать","Отмена");
+			
+		    format(str,sizeof(str), ""COL_BLUE"\nЗдравствуйте, у нас Вы можете арендовать мопед.\nСтоимость аренды мопеда: "COL_GREEN"%d $.", CENA_ARENDI);
+			ShowPlayerDialog(playerid, DIALOG_ID_RENTMOPED, D_S_M, ""COL_ORANGE"Аренда мопеда", str, "Арендовать", "Отмена");
 			return 1;
 		}
 		
@@ -1328,7 +1398,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 					\tВаш транспорт будет продаваться с учетом налога на продажу.\t\n\
 					\tНа данный момент налоговая ставка составляет "COL_APED"%d %%"COL_WHITE".\t\n\n\
 					\tБудем оформлять Ваш транспорт на продажу?\t\n\n";
-			new d34[512];
+			new d34[400];
 			
 			format(d34, sizeof(d34), D34, NALOG_BUYCAR);
 			ShowPlayerDialog(playerid, DIALOG_ID_SELLCAR, D_S_M,""COL_ORANGE"Продажа транспорта",d34,"Да","Нет");
@@ -1338,7 +1408,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		cmd::vmenu(playerid, "");
 	}
 	
-	if (newkeys == 2)
+	if (newkeys == KEY_CROUCH)
    	{
 		if(IsAtGasStation(playerid))
    	    {
@@ -1361,7 +1431,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		}
 	}
 	
-	if (newkeys == KEY_NO)
+	if (newkeys == KEY_NO && PlayerInfo[playerid][pAPEDBattery] > 0)
 	{		
 		ShowPlayerAPEDDialog(playerid);
 		
@@ -1371,7 +1441,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		ProxDetector(playerid, COLOR_PROX, string, 10);
 	}
 	
-    if (newkeys == 1024 && !IsPlayerBlackScreen[playerid])
+    if (newkeys == KEY_WALK && !IsPlayerBlackScreen[playerid])
    	{
     	for(new i = 0; i < MAX_HOUSES;i++)
 		{
@@ -1402,13 +1472,15 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		    if(IsPlayerInRangeOfPoint(playerid, 1.0, EnterInfo[i][eEnterX], EnterInfo[i][eEnterY], EnterInfo[i][eEnterZ]))
 		    {
 		        SetPlayerPosCW(playerid, EnterInfo[i][eExitX], EnterInfo[i][eExitY], EnterInfo[i][eExitZ], EnterInfo[i][eExitA],EnterInfo[i][eExitInt],EnterInfo[i][eExitVirt]);
-				ApplyAnimation(playerid, "PED", "Walk_Wuzi", 4.1, 0, 1, 1, 1, 0, 1);
+				//ApplyAnimation(playerid, "PED", "Walk_Wuzi", 4.1, 0, 1, 1, 1, 0, 1);
+				ApplyAnimation(playerid, "CRIB", "CRIB_Use_Switch", 4.1, 0, 1, 1, 1, 0, 1);
 		        break;
 		    }
 		    else if(IsPlayerInRangeOfPoint(playerid, 1.0, EnterInfo[i][eExitX], EnterInfo[i][eExitY], EnterInfo[i][eExitZ]))
 		    {
 		        SetPlayerPosCW(playerid, EnterInfo[i][eEnterX], EnterInfo[i][eEnterY], EnterInfo[i][eEnterZ], EnterInfo[i][eEnterA],EnterInfo[i][eEnterInt], EnterInfo[i][eEnterVirt]);
-				ApplyAnimation(playerid, "PED", "Walk_Wuzi", 4.1, 0, 1, 1, 1, 0, 1);
+				//ApplyAnimation(playerid, "PED", "Walk_Wuzi", 4.1, 0, 1, 1, 1, 0, 1);
+				ApplyAnimation(playerid, "CRIB", "CRIB_Use_Switch", 4.1, 0, 1, 1, 1, 0, 1);
 		        break;
 		    }
 		}
@@ -1419,7 +1491,8 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		if(IsPlayerAttachedObjectSlotUsed(playerid, 1) && GetPVarInt(playerid, "StartJob") ==  1) 
 		{
 			RemovePlayerAttachedObject(playerid, 1);
-			ApplyAnimation(playerid,"PED","getup_front",4.0,0,0,0,0,0); 
+			ClearAnimations(playerid);
+			ApplyAnimation(playerid,"PED","getup_front", 4.0, 0, 0, 0, 0, 0); 
 			
 			GiveEndurance(playerid, -2);
 			
@@ -1431,6 +1504,8 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 			
 			SendClientMessage(playerid, COLOR_GREY,"Вы уронили бревна.");
 		}
+		/*if(PlayerInfo[playerid][pEndurance] < TWOHOURS)
+			ClearAnimations(playerid), ApplyAnimation(playerid, "FAT", "IDLE_tired", 4.0, 0, 0, 0, 0, 0);*/
 	}  
 	return 1;
 }
@@ -1581,35 +1656,74 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
              	Veh[car][vBuy] = VBUYTOCARKEY;
              	Veh[car][vLock] = 0;
 				strmid(Veh[car][vOwner], Name(playerid), 0, strlen(Name(playerid)), MAX_PLAYER_NAME+1);
-				SaveVeh();
+				SaveOneVeh(car);
 				
              	PlayerInfo[playerid][pMoney] -= Veh[car][vPrice];
 				             	
-             	SendClientMessage(playerid,COLOR_YELLOW,"Поздравляем с новой покупкой!");
+             	GameTextForPlayer(playerid, FixText("~G~Поздравляем с покупкой"), 1500, 3);
 				
              	TogglePlayerControllable(playerid, 1);
        			return 1;
  			}
- 			else
+ 			/*else
 			{
 			    RemovePlayerFromVehicle(playerid);
 			    TogglePlayerControllable(playerid, 1);
-			}
+			}*/
 		}
 		
 		case DIALOG_ID_VMENU:
   		{
     		if(response)
-      		{
-				new carid = GetAroundPlayerVehicleID(playerid, 4.0);
-				
+      		{				
 				if(listitem >= 0 && listitem <= 6)
                 {
-                    new params[7];
-                    GetVehicleParamsEx(carid, params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
-                    params[listitem] = !params[listitem];
-                    SetVehicleParamsEx(carid, params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
+					static const
+						fmt_str1_0[] = " вставляет ключ в замок зажигания (Заводит двигатель).",
+						fmt_str1_1[] = " вытаскивает ключ из замка зажигания (Глушит двигатель).",
+						fmt_str2_0[] = " включает ближний свет фар.",
+						fmt_str2_1[] = " выключает ближний свет фар.",
+						fmt_str3_0[] = " активирует сигнализацию.",
+						fmt_str3_1[] = " деактивирует сигнализацию.",
+						fmt_str4_0[] = " открывает двери.",
+						fmt_str4_1[] = " закрывает двери.",
+						fmt_str5_0[] = " открывает капот.",
+						fmt_str5_1[] = " закрывает капот.",
+						fmt_str6_0[] = " открывает багажник.",
+						fmt_str6_1[] = " закрывает багажник.",
+						fmt_str7_0[] = " активирует поиск транспорта по GPS.",
+						fmt_str7_1[] = " деактивирует поиск транспорта по GPS.";
+					
+					const
+						size = sizeof(fmt_str7_1) + (MAX_PLAYER_NAME+1);
+					
+					new string[size];
+					
+                    new params[7],
+						carid = GetAroundPlayerVehicleID(playerid, 4.0);
 						
+                    GetVehicleParamsEx(carid, params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
+					
+					strcat(string, Name(playerid));
+					switch(listitem)
+					{
+						case 0: 
+						{
+							strcat(string, (!params[0]) ? (fmt_str1_0) : (fmt_str1_1)); 
+							Engine[carid] = (Engine[carid]) ? false : true;
+						}
+						case 1: strcat(string, (!params[1]) ? (fmt_str2_0) : (fmt_str2_1));
+						case 2: strcat(string, (!params[2]) ? (fmt_str3_0) : (fmt_str3_1));
+						case 3: strcat(string, (!params[3]) ? (fmt_str4_0) : (fmt_str4_1));
+						case 4: strcat(string, (!params[4]) ? (fmt_str5_0) : (fmt_str5_1));
+						case 5: strcat(string, (!params[5]) ? (fmt_str6_0) : (fmt_str6_1));
+						case 6: strcat(string, (!params[6]) ? (fmt_str7_0) : (fmt_str7_1));
+					}
+					ProxDetector(playerid,COLOR_PROX, string, 10.0);
+					
+					params[listitem] = !params[listitem];
+                    SetVehicleParamsEx(carid, params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
+					
 					ShowPlayerVehicleDialog(playerid);
                 }
 			}
@@ -1682,7 +1796,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				
 				else
 				{
-					new str[58];
+					new str[46 -2 + 9];
 					
 					format(str,sizeof(str), ""COL_BLUE"\nСпасибо за помощь, вот Ваши "COL_GREEN"%d $.\n",PlayerInfo[playerid][pMoneyDolg]);
 					ShowPlayerDialog(playerid, DIALOG_ID_NONE, D_S_M,""COL_ORANGE"Дровосек",str,"Принять","");
@@ -1852,17 +1966,18 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 					case 0:
 					{
-							new buffer[256];
-							foreach(Player, i)
-							{
-								new meme = PlayerInfo[playerid][pMember];
-								if(meme == PlayerInfo[i][pMember])
-								{
-									format(buffer, sizeof(buffer), ""COL_WHITE"Имя: {9DDAF2}%s "COL_WHITE"| ID: {9DDAF2}%d "COL_WHITE"| Ранг: {9DDAF2}%s "COL_WHITE"| Кол-во выговоров: {9DDAF2}%d\n",
+						new string[1040], string1[85 + MAX_PLAYER_NAME + 4 + 32 + 1]; 
+						foreach(Player, i)
+						{  
+							if(PlayerInfo[playerid][pMember] != PlayerInfo[i][pMember]) continue; 
+							
+							format(string, sizeof(string), ""COL_APED"%s \t"COL_APED"%d \t"COL_APED"%s \t"COL_APED"%d\n",
 									Name(i), i, PlayerInfo[i][pRankName], PlayerInfo[i][pMemberWarn]);
-									ShowPlayerDialog(playerid, DIALOG_ID_BACKTOLMENU, D_S_M, ""COL_ORANGE"Члены организации онлайн", buffer, "Закрыть", "Назад");
-								}
-							}
+									
+							strcat(string1, string, sizeof(string1)); 
+						} 
+						format(string, sizeof(string), ""COL_WHITE"Имя: \t"COL_WHITE"ID: \t"COL_WHITE"Ранг: \t"COL_WHITE"Кол-во выговоров: \n%s", string1); 
+						ShowPlayerDialog(playerid, DIALOG_ID_BACKTOLMENU, D_S_TH, ""COL_ORANGE"Члены организации онлайн", string, "Закрыть", "Назад"); 
 					}
 					case 1:
 					{
@@ -1927,7 +2042,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					", "Принять", "Назад");
 	                return 1;
 	            }
-	            if (strval(inputtext) == INVALID_PLAYER_ID || !IsPlayerConnected(strval(inputtext)) || gPlayerLogged[strval(inputtext)] == false)
+	            if (strval(inputtext) == INVALID_PLAYER_ID || gPlayerLogged[strval(inputtext)] == false)
 				return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети."), ShowPlayerLeaderDialog(playerid);
 			
 				if (strval(inputtext) == playerid) return SendClientMessage(playerid, COLOR_GREY, "Вы ввели свой ID."), ShowPlayerLeaderDialog(playerid);
@@ -1938,7 +2053,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				IDFrac[strval(inputtext)] = PlayerInfo[playerid][pLeader];
 				IDLeader = playerid;
 				
-				new string[128];
+				new string[66 - 6 + 4 + MAX_PLAYER_NAME + MAX_FRACTION_NAME_LENGTH];
 			 					
 				format(string,sizeof(string), ""COL_BLUE"\n[%d] %s хочет принять Вас во организацию "COL_WHITE"%s\n",playerid,Name(playerid),fraction_name[PlayerInfo[playerid][pLeader]]);
 				ShowPlayerDialog(strval(inputtext), DIALOG_ID_INVITEMEMBERYESNO, D_S_M,""COL_ORANGE"Приглашение в организацию",string, "Принять", "Отмена");
@@ -1961,7 +2076,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	                return 1;
 	            }
 				
-	            if (strval(inputtext) == INVALID_PLAYER_ID || !IsPlayerConnected(strval(inputtext)) || gPlayerLogged[strval(inputtext)] == false) 
+	            if (strval(inputtext) == INVALID_PLAYER_ID || gPlayerLogged[strval(inputtext)] == false) 
 				return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети."), ShowPlayerLeaderDialog(playerid);
 				
 				if(strval(inputtext) == playerid) 
@@ -1970,7 +2085,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				if(PlayerInfo[strval(inputtext)][pMember] != PlayerInfo[playerid][pMember])
 				return SendClientMessage(playerid, COLOR_GREY,"Этот игрок не работает в вашей организации."), ShowPlayerLeaderDialog(playerid);
 				
-				new string[128];
+				new string[49 - 6 +4 + MAX_FRACTION_NAME_LENGTH + MAX_PLAYER_NAME];
 				
 				format(string,sizeof(string), ""COL_BLUE"\n[%d] %s уволил вас из организации "COL_WHITE"%s\n",playerid,Name(playerid),fraction_name[PlayerInfo[playerid][pLeader]]);
 				ShowPlayerDialog(strval(inputtext), DIALOG_ID_NONE, D_S_M,""COL_ORANGE"Увольнение из организации",string, "Принять", "");
@@ -1998,7 +2113,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	                return 1;
 	            }
 				
-	            if (strval(inputtext) == INVALID_PLAYER_ID || !IsPlayerConnected(strval(inputtext)) || gPlayerLogged[strval(inputtext)] == false) 
+	            if (strval(inputtext) == INVALID_PLAYER_ID || gPlayerLogged[strval(inputtext)] == false) 
 				return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети."), ShowPlayerLeaderDialog(playerid);
 			
 				if(strval(inputtext) == playerid) 
@@ -2009,7 +2124,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				
 				PlayerInfo[strval(inputtext)][pMemberWarn] += 1;
 				
-				new string[128];
+				new string[62 - 6 +1 + 4 + MAX_PLAYER_NAME];
 				
 				format(string,sizeof(string), ""COL_BLUE"\n[%d] %s дал вам выговор. Количество выговоров: "COL_WHITE"%d\n",playerid,Name(playerid),PlayerInfo[strval(inputtext)][pMemberWarn]);
 				ShowPlayerDialog(strval(inputtext), DIALOG_ID_NONE, D_S_M,""COL_ORANGE"Выговор",string, "Принять", "");
@@ -2032,7 +2147,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	                return 1;
 	            }
 				
-	            if (strval(inputtext) == INVALID_PLAYER_ID || !IsPlayerConnected(strval(inputtext)) || gPlayerLogged[strval(inputtext)] == false) 
+	            if (strval(inputtext) == INVALID_PLAYER_ID || gPlayerLogged[strval(inputtext)] == false) 
 				return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети."), ShowPlayerLeaderDialog(playerid);
 			
 				if(strval(inputtext) == playerid) 
@@ -2043,7 +2158,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				
 				PlayerInfo[strval(inputtext)][pMemberWarn] -= 1;
 				
-				new string[128];
+				new string[74 - 6 +1 + 4 + MAX_PLAYER_NAME];
 				
 				format(string,sizeof(string), ""COL_BLUE"\n[%d] %s снял вам выговор. Количество выговоров: "COL_WHITE"%d\n",playerid,Name(playerid),PlayerInfo[strval(inputtext)][pMemberWarn]);
 				ShowPlayerDialog(strval(inputtext), DIALOG_ID_NONE, D_S_M,""COL_ORANGE"Снятие выговора",string, "Принять", "");
@@ -2065,7 +2180,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					", "Принять", "Назад");
 	                return 1;
 	            }
-	            if (strval(inputtext) == INVALID_PLAYER_ID || !IsPlayerConnected(strval(inputtext)) || gPlayerLogged[strval(inputtext)] == false) 
+	            if (strval(inputtext) == INVALID_PLAYER_ID || gPlayerLogged[strval(inputtext)] == false) 
 				return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети."), ShowPlayerLeaderDialog(playerid);
 			
 				if(PlayerInfo[strval(inputtext)][pMember] != PlayerInfo[playerid][pMember]) 
@@ -2086,15 +2201,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	    {
 	        if(response)// Если игрок нажал первую кнопку
 	        {
-	            new string[128];
+	            new string[63 + 4 + MAX_PLAYER_NAME - 4];
 	            if(!strlen(inputtext))// Если окно ввода пустое, выводим диалог снова
 	            {
 	                format(string,sizeof(string), ""COL_BLUE"Введите название ранга для игрока "COL_WHITE"[%d] %s\n",strval(inputtext),Name(strval(inputtext)));
 					ShowPlayerDialog(playerid, DIALOG_ID_SETMEMBERRANKNAME, D_S_I,""COL_ORANGE"Установить ранг",string, "Принять", "Назад");
 	                return 1;
 	            }
-	            if (GetPVarInt(playerid, "MemberRangID") == INVALID_PLAYER_ID || !IsPlayerConnected(GetPVarInt(playerid, "MemberRangID"))
-					|| gPlayerLogged[GetPVarInt(playerid, "MemberRangID")] == false) 
+	            if (GetPVarInt(playerid, "MemberRangID") == INVALID_PLAYER_ID || gPlayerLogged[GetPVarInt(playerid, "MemberRangID")] == false) 
 				return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 			
 				if(PlayerInfo[GetPVarInt(playerid, "MemberRangID")][pMember] != PlayerInfo[playerid][pMember]) 
@@ -2102,7 +2216,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			
 				strmid(PlayerInfo[GetPVarInt(playerid, "MemberRangID")][pRankName], inputtext, 0, strlen(inputtext), 32);
 				
-				SendClientMessage(playerid, COLOR_GREEN,"Ранг установлен.");
+				format(string, sizeof(string), "Вы установили игроку %s ранг %s.", Name(GetPVarInt(playerid, "MemberSkinID")), inputtext);
+				SendClientMessage(playerid, COLOR_GREEN, string);
 	        }
 	        else// Если игрок нажал Esc, вернём ему диалог
 	        {
@@ -2124,11 +2239,24 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					", "Принять", "Назад");
 	                return 1;
 	            }
-	            if (strval(inputtext) == INVALID_PLAYER_ID || !IsPlayerConnected(strval(inputtext)) || gPlayerLogged[strval(inputtext)] == false) 
-				return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети."), ShowPlayerLeaderDialog(playerid);
+				
+	            if (strval(inputtext) == INVALID_PLAYER_ID || gPlayerLogged[strval(inputtext)] == false) 
+				{
+					SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
+					ShowPlayerDialog(playerid, DIALOG_ID_SETMEMBERSKINID, D_S_I, ""COL_ORANGE"Установить скин", "\
+					"COL_BLUE"Введите ID игрока, которому вы хотите установить скин:\n\
+					", "Принять", "Назад");
+					return 1;
+				}
 			
 				if(PlayerInfo[strval(inputtext)][pMember] != PlayerInfo[playerid][pMember]) 
-				return SendClientMessage(playerid, COLOR_GREY,"Этот игрок не работает в вашей организации."), ShowPlayerLeaderDialog(playerid);
+				{
+					SendClientMessage(playerid, COLOR_GREY,"Этот игрок не работает в вашей организации.");
+					ShowPlayerDialog(playerid, DIALOG_ID_SETMEMBERSKINID, D_S_I, ""COL_ORANGE"Установить скин", "\
+					"COL_BLUE"Введите ID игрока, которому вы хотите установить скин:\n\
+					", "Принять", "Назад");
+					return 1;
+				}
 			
 				SetPVarInt(playerid, "MemberSkinID", strval(inputtext));
 				
@@ -2146,15 +2274,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	    {
 	        if(response)// Если игрок нажал первую кнопку
 	        {
-	            new string[128];
+	            new string[60 + 5 + MAX_PLAYER_NAME - 4];
 	            if(!strlen(inputtext))// Если окно ввода пустое, выводим диалог снова
 	            {
 	                format(string,sizeof(string), ""COL_BLUE"Введите номер скина для игрока "COL_WHITE"[%d] %s\n",strval(inputtext),Name(strval(inputtext)));
 					ShowPlayerDialog(playerid, DIALOG_ID_SETMEMBERSKIN, D_S_I,""COL_ORANGE"Установить скин",string, "Принять", "Назад");
 	                return 1;
 	            }
-	            if (GetPVarInt(playerid, "MemberSkinID") == INVALID_PLAYER_ID || !IsPlayerConnected(GetPVarInt(playerid, "MemberSkinID"))
-					|| gPlayerLogged[GetPVarInt(playerid, "MemberSkinID")] == false) 
+	            if (GetPVarInt(playerid, "MemberSkinID") == INVALID_PLAYER_ID || gPlayerLogged[GetPVarInt(playerid, "MemberSkinID")] == false) 
 				return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 			
 				if(PlayerInfo[GetPVarInt(playerid, "MemberSkinID")][pMember] != PlayerInfo[playerid][pMember]) 
@@ -2162,7 +2289,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			
 				PlayerInfo[GetPVarInt(playerid, "MemberSkinID")][pMemberSkin] = strval(inputtext);
 				
-				SendClientMessage(playerid, COLOR_GREEN,"Скин установлен.");
+				format(string, sizeof(string), "Вы установили игроку %s скин № %d.", Name(GetPVarInt(playerid, "MemberSkinID")), strval(inputtext));
+				SendClientMessage(playerid, COLOR_GREEN, string);
 	        }
 	        else// Если игрок нажал Esc, вернём ему диалог
 	        {
@@ -2280,7 +2408,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			
 				GameTextForPlayer(playerid, FixText("~G~Транспорт продан"), 1500, 3);
 				
-				SaveVeh();
+				SaveOneVeh(carid);
 			}
 			else ShowPlayerDialog(playerid, DIALOG_ID_SELLCARPRICE, D_S_I,""COL_ORANGE"Продажа транспорта",""COL_WHITE"Введите сумму, которую хотите получить за продажу транспорта:\n"
 			,"Принять","Отмена");
@@ -2330,7 +2458,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					case 4:
 					{
 						
-					}					
+					}	
+					case 5:
+					{
+						ShowPlayerAdminDialog(playerid);
+					}						
 				}
 			}
 			else 
@@ -2348,6 +2480,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if(!response)
 			{
 				ShowPlayerAPEDDialog(playerid);
+			}
+			if(response)
+			{
+				new string[MAX_PLAYER_NAME+1 -2 +42];
+				
+				format(string, sizeof(string), "%s поднимает взгляд с экрана и убирает APED.", Name(playerid));
+				ProxDetector(playerid, COLOR_PROX, string, 10);
 			}
 		}
 		
@@ -2393,6 +2532,69 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			}
 			else ShowPlayerAPEDDialog(playerid);
 		}
+		
+		case DIALOG_ID_APPDWEAPON: 
+		{
+			if(response)
+			{
+				new string[MAX_PLAYER_NAME+1 -2 +39];
+				
+				format(string, sizeof(string), "%s забирает со стола амуницию, оружие и патроны.", Name(playerid));
+				ProxDetector(playerid, COLOR_PROX, string, 3);
+				
+				GivePlayerWeapon(playerid, 24, 35);
+				GivePlayerWeapon(playerid, 3, 1);
+				SetPlayerArmour(playerid, 100.0);
+			}
+		}
+		
+		case DIALOG_ID_ADMINMENU: 
+		{
+			if(response)
+			{
+				switch(listitem)
+				{
+					case 0: 
+					{
+						static const
+							fmt_dlg[] = "%s"COL_WHITE"[ %d ] "COL_BLUE"%s\n";
+
+						new dialog_string[(sizeof(fmt_dlg) + (-2+MAX_FRACTION_NAME_LENGTH))*MAX_FRACTIONS];
+
+						for(new i = 1; i < MAX_FRACTIONS; i++)
+							format(dialog_string, sizeof(dialog_string), fmt_dlg, dialog_string, i, fraction_name[i]);
+						
+						ShowPlayerDialog(playerid, DIALOG_ID_ADMINMENUTPLIST, D_S_L,""COL_ORANGE"Телепорт по местам", dialog_string
+						,"Принять","Назад");
+					}
+				}					
+			}
+			else ShowPlayerAPEDDialog(playerid);
+		}
+		
+		case DIALOG_ID_ADMINMENUTPLIST:
+		{
+			if(response)
+			{
+				new Float:TPList[7][3] =
+				{
+						{-2061.0405,-2538.1675,30.6250},
+						{-2070.8337,-2312.8096,30.6250},
+						{-2217.1873,-2297.8496,31.1628},
+						{-2191.3755,-2336.2871,30.6010},
+						{-2396.7039,-2205.0300,33.6179},
+						{-1858.3770,-1647.6699,26.0955},
+						{-2113.4824,-2453.0422,30.6250}
+				};
+					
+				SetPlayerPos(playerid, TPList[listitem][0], TPList[listitem][1], TPList[listitem][2]);
+				SetPlayerInterior(playerid, 0);
+				SetPlayerVirtualWorld(playerid, 0);	
+			}
+			else ShowPlayerAdminDialog(playerid);
+			return 1;
+		}
+		
 	}
 	return 1;
 }
@@ -2551,6 +2753,8 @@ public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
 
 public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart)
 {
+	PlayerInfo[playerid][pHP] -= amount;
+	
 	if(issuerid != INVALID_PLAYER_ID) // если игрок не ударился сам
     {
         new issuerweaponid = GetPlayerWeapon(issuerid);
@@ -2577,7 +2781,6 @@ public OnPlayerTakeDamage(playerid, issuerid, Float: amount, weaponid, bodypart)
             }
         }
     } 
-	else	PlayerInfo[playerid][pHP] -= amount;
     return 1;
 }
 
@@ -2687,7 +2890,7 @@ CMD:parkveh(playerid, params[])
 	
 	GameTextForPlayer(playerid, FixText("~G~Транспорт припаркован"), 1000, 3);
 	
-   	SaveVeh();// Сохраненяем машину
+   	SaveOneVeh(LastCar);// Сохраненяем машину
    	return 1;
 }
 
@@ -2753,8 +2956,8 @@ CMD:tow(playerid, params[])
 	if(IsTrailerAttachedToVehicle(GetPlayerVehicleID(playerid))) 
 	return DetachTrailerFromVehicle(GetPlayerVehicleID(playerid)), GameTextForPlayer(playerid, FixText("~L~Транспорт отцеплен"), 1000, 3);
 
-	for(new i=1; i < MAX_VEHICLES; i++)
-	{
+	for(new i = 0; i < GetVehiclePoolSize(); i++)  
+	{ 
 		if(i != vehicleid && GetVehiclePos(i, x, y, z))
 		{
 			dist = GetPlayerDistanceFromPoint(playerid, x, y, z);
@@ -2823,12 +3026,12 @@ CMD:makeleader(playerid, params[])
     extract params -> new player:target;	else
 	return SendClientMessage(playerid,COLOR_GREY,"CMD: /makeleader [ID игрока]");
 
-    if (target == INVALID_PLAYER_ID || !IsPlayerConnected(target) || gPlayerLogged[target] == false)
+    if (target == INVALID_PLAYER_ID || gPlayerLogged[target] == false)
 	return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
     static const
-        fmt_dlg_header[] = "Назначить лидером игрока "COL_WHITE"[%d] %s",
-        fmt_dlg[] = "%s%s\n";
+        fmt_dlg_header[] = ""COL_ORANGE"Назначить лидером игрока "COL_WHITE"[%d] %s",
+        fmt_dlg[] = ""COL_BLUE"%s%s\n";
 
     new
         header_string[sizeof(fmt_dlg_header) + (-2+MAX_PLAYER_NAME+1) + (-2+5)],
@@ -2852,7 +3055,7 @@ CMD:kick(playerid, params[])
 	if(sscanf(params,"is[30]",params[0],params[1])) 
 	return SendClientMessage(playerid,COLOR_GREY,"CMD: /kick [ID игрока] [Причина]");
 
-	if (params[0] == INVALID_PLAYER_ID || !IsPlayerConnected(params[0]) || gPlayerLogged[params[0]] == false) 
+	if (params[0] == INVALID_PLAYER_ID || gPlayerLogged[params[0]] == false) 
 	return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
 	new str[128],
@@ -2877,7 +3080,7 @@ CMD:ban(playerid, params[])
 	if(sscanf(params,"is[30]",params[0],params[1])) 
 		return SendClientMessage(playerid,COLOR_GREY,"CMD: /ban [ID игрока] [Причина]");
 
-	if (params[0] == INVALID_PLAYER_ID || !IsPlayerConnected(params[0]) || gPlayerLogged[params[0]] == false) 
+	if (params[0] == INVALID_PLAYER_ID || gPlayerLogged[params[0]] == false) 
 		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 	
 	new str[128],
@@ -2901,7 +3104,7 @@ CMD:makeadmin(playerid, params[])
     if (sscanf(params, "dD(5)", params[0], params[1])) 
 	return SendClientMessage(playerid, COLOR_GREY, "CMD: /makeadmin [ID игрока] [Уровень администратора]");
 
-    if (params[0] == INVALID_PLAYER_ID || !IsPlayerConnected(params[0]) || gPlayerLogged[params[0]] == false) 
+    if (params[0] == INVALID_PLAYER_ID || gPlayerLogged[params[0]] == false) 
 	return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
     if (params[1] > 5 || params[1] < 0) 
@@ -2955,7 +3158,7 @@ CMD:setmoney(playerid, params[])
     if(sscanf(params,"ui", targetid, amount)) 
 	return SendClientMessage(playerid, COLOR_GREY, "CMD: /setmoney [ID игрока] [Кол-во денег]");
 
-	if (targetid == INVALID_PLAYER_ID || !IsPlayerConnected(targetid) || gPlayerLogged[targetid] == false) 
+	if (targetid == INVALID_PLAYER_ID || gPlayerLogged[targetid] == false) 
 		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
     PlayerInfo[targetid][pMoney] = amount;
@@ -2972,7 +3175,7 @@ CMD:sethunger(playerid, params[])
     if(sscanf(params,"ui", targetid, amount)) 
 	return SendClientMessage(playerid, COLOR_GREY, "CMD: /sethunger [ID игрока] [Кол-во голода]");
 
-	if (targetid == INVALID_PLAYER_ID || !IsPlayerConnected(targetid) || gPlayerLogged[targetid] == false) 
+	if (targetid == INVALID_PLAYER_ID || gPlayerLogged[targetid] == false) 
 		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
     PlayerInfo[targetid][pHunger] = amount;
@@ -2989,7 +3192,7 @@ CMD:setendurance(playerid, params[])
     if(sscanf(params,"ui", targetid, amount)) 
 	return SendClientMessage(playerid, COLOR_GREY, "CMD: /setendurance [ID игрока] [Кол-во выносливости]");
 
-	if (targetid == INVALID_PLAYER_ID || !IsPlayerConnected(targetid) || gPlayerLogged[targetid] == false) 
+	if (targetid == INVALID_PLAYER_ID || gPlayerLogged[targetid] == false) 
 		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
     PlayerInfo[targetid][pEndurance] = amount;
@@ -3006,7 +3209,7 @@ CMD:setbattery(playerid, params[])
     if(sscanf(params,"ui", targetid, amount)) 
 		return SendClientMessage(playerid, COLOR_GREY, "CMD: /setbattery [ID игрока] [Заряд батареи]");
 	
-	if (targetid == INVALID_PLAYER_ID || !IsPlayerConnected(targetid) || gPlayerLogged[targetid] == false) 
+	if (targetid == INVALID_PLAYER_ID || gPlayerLogged[targetid] == false) 
 		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
     PlayerInfo[targetid][pAPEDBattery] = amount;
@@ -3020,10 +3223,10 @@ CMD:sethp(playerid, params[])
     new targetid,
         amount;
 
-    if(sscanf(params, "ui", targetid, amount))
+    if(sscanf(params, "uI(100)", targetid, amount))
         return SendClientMessage(playerid, COLOR_GREY, "CMD: /sethp [ID игрока] [Количество HP]");
 	
-    if (targetid == INVALID_PLAYER_ID || !IsPlayerConnected(targetid) || gPlayerLogged[targetid] == false) 
+    if (targetid == INVALID_PLAYER_ID || gPlayerLogged[targetid] == false) 
 		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 	
     if(!(0 <= amount <= 100))
@@ -3039,7 +3242,7 @@ CMD:goto(playerid, params[])
     
 	if(sscanf(params,"d", params[0]))return SendClientMessage(playerid, COLOR_GREY, "CMD: /goto [ID игрока]");
 	
-	if (params[0] == INVALID_PLAYER_ID || !IsPlayerConnected(params[0]) || gPlayerLogged[params[0]] == false)
+	if (params[0] == INVALID_PLAYER_ID || gPlayerLogged[params[0]] == false)
 	return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
     new Float:x, Float:y, Float:z;
@@ -3088,6 +3291,23 @@ CMD:gotoap(playerid, params[])
 	return 1;
 }
 
+CMD:gotoveh(playerid, params[])
+{    
+    if (PlayerInfo[playerid][pAdmin] < 5) return 1;
+    
+	new carid,
+		string[41-2+4];
+	if(sscanf(params,"d", carid))return SendClientMessage(playerid, COLOR_GREY, "CMD: /goto [ID транспорта]");
+	
+	SetPlayerPos(playerid, Veh[carid][vVx], Veh[carid][vVy], Veh[carid][vVz] + 0.5);
+	SetPlayerInterior(playerid, 0);
+	SetPlayerVirtualWorld(playerid, 0);
+	
+    format(string,sizeof(string),"Вы телепортировались к транспорту ID: %d.", carid);
+    SendClientMessage(playerid,COLOR_BRIGHTRED, string);
+	return 1;
+}
+
 CMD:gethere(playerid, params[])
 {
     new Float:x, Float:y, Float:z,
@@ -3099,7 +3319,7 @@ CMD:gethere(playerid, params[])
 	if(sscanf(params,"d", params[0]))
 	return SendClientMessage(playerid, COLOR_GREY, "CMD: /gethere [ID игрока]");
 
-	if (params[0] == INVALID_PLAYER_ID || !IsPlayerConnected(params[0]) || gPlayerLogged[params[0]] == false) 
+	if (params[0] == INVALID_PLAYER_ID || gPlayerLogged[params[0]] == false) 
 	return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
 	if(GetPlayerState(params[0]) == PLAYER_STATE_DRIVER)
@@ -3129,7 +3349,7 @@ CMD:givegun(playerid, params[])
 	if(sscanf(params,"udD(1)", _playerid, weaponid, bullet)) 
 		return SendClientMessage(playerid, COLOR_GREY, "CMD: /givegun [ID игрока] [ID оружия] [Кол-во патронов]");
 	
-	if (_playerid == INVALID_PLAYER_ID || !IsPlayerConnected(_playerid) || gPlayerLogged[_playerid] == false) 
+	if (_playerid == INVALID_PLAYER_ID || gPlayerLogged[_playerid] == false) 
 		return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
 	if(weaponid > 47 || weaponid < 1 || (19 <= weaponid <= 21))
@@ -3218,7 +3438,7 @@ CMD:center(playerid, params[])
 	EnterInfo[LastEnter][eEnterVirt], 0);
 	CreatePickup(1272, 23, EnterInfo[LastEnter][eEnterX], EnterInfo[LastEnter][eEnterY], EnterInfo[LastEnter][eEnterZ], EnterInfo[LastEnter][eEnterVirt]);
 	
-	SetPlayerVirtualWorld(playerid, LastEnter);
+	SetPlayerVirtualWorld(playerid, params[0]);
 	
     SaveEnter();
     return 1;
@@ -3245,13 +3465,13 @@ CMD:cexit(playerid, params[])
 	
 	CreatePickup(1272, 23, EnterInfo[LastEnter][eExitX], EnterInfo[LastEnter][eExitY], EnterInfo[LastEnter][eExitZ], EnterInfo[LastEnter][eExitVirt]);
 	
-	SetPlayerVirtualWorld(playerid, LastEnter);
+	SetPlayerVirtualWorld(playerid, params[0]);
 	
     SaveEnter();
     return 1;
 }
 
-CMD:test(playerid, params[])
+CMD:onlineorg(playerid, params[])
 {
     ViewFactions(playerid);
     return 1;
@@ -3267,7 +3487,7 @@ CMD:hi(playerid, params[])
 	
 	if(IsPlayerInAnyVehicle(playerid)) return 1;
 	
-    if (params[0] == INVALID_PLAYER_ID || !IsPlayerConnected(params[0]) || gPlayerLogged[params[0]] == false)
+    if (params[0] == INVALID_PLAYER_ID || gPlayerLogged[params[0]] == false)
 	return SendClientMessage(playerid, COLOR_GREY, "Этот игрок сейчас не в сети.");
 
 	if(params[0] == playerid)  return  SendClientMessage(playerid,COLOR_GREY,"Вы указали свой ID.");
@@ -3409,8 +3629,6 @@ SavePlayer(playerid)
 
 OnPlayerRegister(playerid, password[])
 {
-    if(IsPlayerConnected(playerid))
-    {
         new string[64];// Масив с путём для файла
         format(string,sizeof(string), "Users/%s.ini", Name(playerid));
         new iniFile = ini_createFile(string);// Создаём файл с именем игрока в папке players
@@ -3463,14 +3681,11 @@ OnPlayerRegister(playerid, password[])
 		PlayerInfo[playerid][pEnduranceMax] = SEVENHOURS;			
 
 		SetSkin(playerid);
-    }
-    return 1;
+		return 1;
 }
 
 OnPlayerLogin(playerid,password[])
 {
-    if(IsPlayerConnected(playerid))// Проверка на подключение игрока
-    {
         new string[64];// Масив с путём для файла
         new pass[64];// Масив с паролем
         format(string,sizeof(string), "Users/%s.ini", Name(playerid));// Добавляем имя игрока, в путь для загрузки
@@ -3516,9 +3731,7 @@ OnPlayerLogin(playerid,password[])
         }
         gPlayerLogged[playerid] = true;
         TogglePlayerSpectating(playerid, false);
-        
-    }
-    return 1;
+		return 1;
 }
 
 UpdatePlayerPosition(playerid)
@@ -3541,7 +3754,6 @@ UpdatePlayerPosition(playerid)
 	}
     return 1;
 }
-
 
 LoadHouses()
 {
@@ -3672,11 +3884,11 @@ SaveEnter()
 
 LoadVeh()
 {
-    new string[128],str[16],arrCoords[13][128];// Необходимые массивы
+    new string[128],str[16],arrCoords[14][128];// Необходимые массивы
     new iniFile = ini_openFile("vehicle.ini");// Выбираем файл для загрузки, и открываем
     {
-        for(new v = 1; v < MAX_VEHICLES; v++)// Цикл Авто
-        {
+        for(new v = 1; v < MAX_VEHICLES; v++)  
+		{ 
             format(str,sizeof(str),"vID %d",v);// Выбираем какой ид загружать
             ini_getString(iniFile,str,string);// Загружаем ид
             split(string,arrCoords,',');// Разделяем загруженные числа запятой
@@ -3695,14 +3907,15 @@ LoadVeh()
                 Veh[v][vBuy] = strval(arrCoords[10]);
                 Veh[v][vLock] = strval(arrCoords[11]);
                 Veh[v][vFuel] = strval(arrCoords[12]);
-                LastCar++;// Прибавляем машину к общему колличеству
+                Veh[v][vHP] = floatstr(arrCoords[13]);
+                LastCar++;// Прибавляем машину к общему количеству
             }
         }
         ini_closeFile(iniFile);// Закрываем файл
     }
 }
 
-SaveVeh()
+/*SaveVeh()
 {
     new string[128],str[32];// Необходимые массивы
     new iniFile = ini_openFile("vehicle.ini");// Выбираем файл для записи, и открываем
@@ -3727,6 +3940,48 @@ SaveVeh()
         ini_setString(iniFile,str,string);// записываем ид машины
     }
     ini_closeFile(iniFile);// Закрываем файл
+}*/
+
+SaveOneVeh(vehicleid)
+{
+    new string[128],str[32];// Необходимые массивы
+    new iniFile = ini_openFile("vehicle.ini");// Выбираем файл для записи, и открываем
+	format(string,sizeof(string),"%d, %d, %f, %f, %f, %f, %d, %d, %s, %d, %d, %d, %d, %.0f",// Выбираем что записывать..
+	Veh[vehicleid][vAdd],// Проверка на созданную машину
+	Veh[vehicleid][vModel],// Модель машины
+	Veh[vehicleid][vVx],// Позиция x
+	Veh[vehicleid][vVy],// Позиция y
+	Veh[vehicleid][vVz],// Позиция z
+	Veh[vehicleid][vVa],// Угол поворота
+	Veh[vehicleid][vColor],// Цвет 1
+	Veh[vehicleid][vColor2],
+	Veh[vehicleid][vOwner],
+	Veh[vehicleid][vPrice],
+	Veh[vehicleid][vBuy],
+	Veh[vehicleid][vLock],
+	Veh[vehicleid][vFuel],
+	Veh[vehicleid][vHP]);
+	
+	format(str,sizeof(str),"vID %d",vehicleid);// записываем ид машины
+	ini_setString(iniFile,str,string);
+	ini_closeFile(iniFile);// Закрываем файл
+}
+
+UpdateVehiclePosition(vehicleid)
+{
+	new Float:x, Float:y, Float:z,Float:za, Float:VHP;
+		
+	GetVehicleHealth(vehicleid, VHP);
+		
+	GetVehiclePos(vehicleid, x, y, z);
+	GetVehicleZAngle(vehicleid, za);
+		
+	Veh[vehicleid][vVx] = x;
+	Veh[vehicleid][vVy] = y;
+	Veh[vehicleid][vVz] = z;
+	Veh[vehicleid][vVa] = za;
+	Veh[vehicleid][vHP] = VHP;
+    return 1;
 }
 
 SaveWood()
@@ -3780,7 +4035,7 @@ WriteLog(namelog[],string[])
 MessageToAdmin(color, const string[])
 {
     foreach(Player, i)
-	if(IsPlayerConnected(i)) if(PlayerInfo[i][pAdmin] > 0)
+	if(PlayerInfo[i][pAdmin] > 0)
 	SendClientMessage(i, color, string);
     return 1;
 }
@@ -3985,8 +4240,6 @@ GetVehicleSpeed(vehicleid)
 
 IsAtGasStation(playerid)
 {
-    if(!IsPlayerConnected(playerid)) return 1;
-	
 	if(	IsPlayerInRangeOfPoint(playerid, 10.0, -2232.4133,-2565.5027,32.1500) || 
 		IsPlayerInRangeOfPoint(playerid, 10.0, -1539.2720,-2742.5432,48.5376)) return 1;
 	return 0;
@@ -4006,22 +4259,44 @@ ShowPlayerLeaderDialog(playerid)
 	return true;
 }
 
+ShowPlayerAdminDialog(playerid)
+{
+	ShowPlayerDialog(playerid, DIALOG_ID_ADMINMENU, D_S_L, ""COL_ORANGE"Меню администратора", "\
+	"COL_WHITE"[1] "COL_BLUE"Телепорт по местам\n\
+	", "Выбрать", "Назад");
+	return true;
+}
+
 ShowPlayerAPEDDialog(playerid)
 {
+	
+	static const APEDMenu[] = "\
+								"COL_WHITE"[1] "COL_BLUE"Информация о Вашем состоянии\n\
+								"COL_WHITE"[2] "COL_BLUE"Действия\n\
+								"COL_WHITE"[3] "COL_BLUE"Меню организации\n\
+								"COL_WHITE"[4] "COL_BLUE"Настройки\n\
+								"COL_WHITE"[5] "COL_BLUE"Помощь\n";
+								
+	static const APEDMenuAdm[] = "\
+								"COL_WHITE"[6] "COL_YELLOW"Меню администратора\n";
+								
 	new Float:battery,
 		d37[70];
+		
+	const
+		size = sizeof(APEDMenu) + sizeof(APEDMenuAdm);
+		
+	new string[size];
+		
+	strcat(string, APEDMenu);
+	if(PlayerInfo[playerid][pAdmin] > 0)
+		strcat(string, APEDMenuAdm);
 		
 	battery = floatround(PlayerInfo[playerid][pAPEDBattery] / 360, floatround_ceil);
 	
 	format(d37,sizeof(d37),""COL_ORANGE"Меню APED.          Заряд батареи: "COL_WHITE"[ %.0f %% ]",battery);
 	
-	ShowPlayerDialog(playerid, DIALOG_ID_APEDMENU, D_S_L, d37, "\
-	"COL_WHITE"[1] "COL_BLUE"Информация о Вашем состоянии\n\
-	"COL_WHITE"[2] "COL_BLUE"Действия\n\
-	"COL_WHITE"[3] "COL_BLUE"Меню организации\n\
-	"COL_WHITE"[4] "COL_BLUE"Настройки\n\
-	"COL_WHITE"[5] "COL_BLUE"Помощь\n\
-	", "Выбрать", "Закрыть");
+	ShowPlayerDialog(playerid, DIALOG_ID_APEDMENU, D_S_L, d37, string, "Выбрать", "Закрыть");
 	return true;
 }
 
@@ -4052,7 +4327,7 @@ ShowPlayerPlayerInfoDialog(playerid)
 			"\n"COL_BLUE"Состояние здоровья: \t%s"\
 			"\n\t"\
 			"\n"COL_BLUE"Наличные: \t"COL_GREEN"%d $"\
-			"\n"COL_BLUE"Ключи от автомобиля №: \t%d"\
+			"\n"COL_BLUE"Ключи от автомобиля №: \t %s"\
 			"\n"COL_BLUE"Организация: \t%s";
 			
 	new d35[24+26+35+38+38+28 + 10 + MAX_FRACTION_NAME_LENGTH +37+39+24],
@@ -4061,7 +4336,7 @@ ShowPlayerPlayerInfoDialog(playerid)
 		endurance[39],
 		healths[24],
 		money,
-		carkey,
+		carkey[4],
 		org[MAX_FRACTION_NAME_LENGTH],
 		Float:health,
 		Float:battery;
@@ -4069,9 +4344,18 @@ ShowPlayerPlayerInfoDialog(playerid)
     GetPlayerHealth(playerid,health);
 	
 	battery = floatround(PlayerInfo[playerid][pAPEDBattery] / 360, floatround_ceil);
+	
 	money = PlayerInfo[playerid][pMoney];
-	carkey = PlayerInfo[playerid][pCarKey];
-	org = fraction_name[PlayerInfo[playerid][pMember]];
+	
+	if(PlayerInfo[playerid][pCarKey] > 0)
+		valstr(carkey,PlayerInfo[playerid][pCarKey]);
+	else
+		carkey = " ";
+	
+	if(PlayerInfo[playerid][pMember] > 0)
+		org = fraction_name[PlayerInfo[playerid][pMember]];
+	else
+		org = " ";
 	
 	static D36[] = ""COL_ORANGE"Меню APED.          Заряд батареи: "COL_WHITE"[ %.0f %% ]";
 			
@@ -4264,26 +4548,22 @@ StartEngine(vehicleid, playerid)
 		
 		new string[size];
 		
-		if(Engine[vehicleid] == false)
+		if(!Engine[vehicleid])
 		{
 			SetVehicleParamsEx(vehicleid,true,lights,alarm,doors,bonnet,boot,objective);
 			Engine[vehicleid] = true;
-					
-			format(string,sizeof(string), fmt_str0 ,Name(playerid));
-			ProxDetector(playerid,COLOR_PROX, string, 10.0);
-			return 1;
 		}
-		if(Engine[vehicleid] == true)
+		else
 		{
 			SetVehicleParamsEx(vehicleid,false,lights,alarm,doors,bonnet,boot,objective);
 			Engine[vehicleid] = false;
-					
-			format(string,sizeof(string), fmt_str1, Name(playerid));
-			ProxDetector(playerid,COLOR_PROX, string, 10.0);
-			return 1;
 		}
+		 
+		format(string, sizeof(string), (Engine[vehicleid]) ? (fmt_str0) : (fmt_str1), Name(playerid));
+		ProxDetector(playerid,COLOR_PROX, string, 10.0);
 	}
 	else return	SendClientMessage(playerid,COLOR_WHITE,"В этом транспорте нет бензина.");
+	
 	return 1;
 }
 
@@ -4465,7 +4745,7 @@ public PlayerUpdate(playerid)
 			SendClientMessage(playerid, COLOR_RED,"Состояние транспорта на низком уровне. Необходим ремонт.");
 		}
 		
-		if(!IsPlayerInAnyVehicle(playerid) && IsPlayerConnected(playerid) && gPlayerLogged[playerid] != false)
+		if(!IsPlayerInAnyVehicle(playerid) && gPlayerLogged[playerid] != false)
 		{	
 			if(IsPlayerIdle(playerid))
 			{
@@ -4501,24 +4781,26 @@ public PlayerUpdate(playerid)
 
 forward Processor();
 public Processor()
-{	
-	for(new v = 1; v < MAX_VEHICLES; v++)
-	{
-		GetVehicleParamsEx(v,engine,lights,alarm,doors,bonnet,boot,objective);
-		if(v > 0)
+{
+	new Float:x,Float:y,Float:z, Float:VHP;
+		
+	for(new v = 0; v < GetVehiclePoolSize(); v++)  
+	{ 	
+		GetVehicleHealth(v, VHP);
+		GetVehiclePos(v, x, y, z);
+		if(Veh[v][vBuy] == VBUYTOCARKEY && (VHP != Veh[v][vHP] || x != Veh[v][vVx] || y != Veh[v][vVy])) UpdateVehiclePosition(v), SaveOneVeh(v);
+		
+		GetVehicleParamsEx(v,engine,lights,alarm,doors,bonnet,boot,objective);		
+			
+		if(VHP < 300.0 && Engine[v] == true)
 		{
-			new Float:VHP;
-			GetVehicleHealth(v, VHP);
-			if(VHP < 300.0 && Engine[v] == true)
-			{
-				SetVehicleHealth(v, 300.0);
-				SetVehicleParamsEx(v,false,lights,alarm,doors,bonnet,boot,objective);
-				Engine[v] = false;
-			}
-			else if(VHP < 300.0 && Engine[v] == false)
-			{
-				SetVehicleHealth(v, 300.0);
-			}
+			SetVehicleHealth(v, 300.0);
+			SetVehicleParamsEx(v,false,lights,alarm,doors,bonnet,boot,objective);
+			Engine[v] = false;
+		}
+		else if(VHP < 300.0 && Engine[v] == false)
+		{
+			SetVehicleHealth(v, 300.0);
 		}
 	}
 		
@@ -4601,7 +4883,7 @@ public SpeedoUpdate()
 	foreach(Player, i)
 	{
 	    new string[24],vehicleid = GetPlayerVehicleID(i);
-		if(IsPlayerConnected(i) && GetPlayerState(i) == PLAYER_STATE_DRIVER && !NoEngine(vehicleid))
+		if(GetPlayerState(i) == PLAYER_STATE_DRIVER && !NoEngine(vehicleid))
 		{
    			TextDrawShowForPlayer(i,box[i]);
 			TextDrawShowForPlayer(i,speed[i]);
@@ -4639,7 +4921,7 @@ public Refill(playerid, litr)
         KillTimer( GetPVarInt(playerid,"_timer")),
         SetPVarInt(playerid, "Refill", 0),
         TogglePlayerControllable(playerid, 1);
-        SaveVeh();
+        SaveOneVeh(vehicleid);
 		new str[130];
         format(str,sizeof(str), ""COL_BLUE" Спасибо за то, что вы заправились на нашей АЗС.\n Заполнено "COL_WHITE"%d %% "COL_BLUE"бензобака.\n Оплачено: "COL_GREEN"%d$."
 		, inputfuel[playerid], CENA_BENZ*inputfuel[playerid]);
@@ -4680,10 +4962,6 @@ public TimeWood(playerid)
         return true;
 }
 
-forward UnfreezeTazer(playerid);
-public UnfreezeTazer(playerid)
-    return TogglePlayerControllable(playerid, 1);  
-
 forward TeleportCW(playerid, Float:x, Float:y, Float:z, Float:a, i, v);
 public TeleportCW(playerid, Float:x, Float:y, Float:z, Float:a, i, v)
 {
@@ -4712,10 +4990,12 @@ public BlackScreenTimer(playerid)
 
 forward ClearAnim(playerid);
 public ClearAnim(playerid)
-{
-	ApplyAnimation(playerid,"CARRY","crry_prtial",4.0,0,0,0,0,0,0);
-	return 1;
-}
+	return ApplyAnimation(playerid,"CARRY","crry_prtial", 4.0, 0, 0, 0, 0, 0, 0);
+	
+forward TogglePlayerControllablePublic(playerid);
+public TogglePlayerControllablePublic(playerid)
+	return TogglePlayerControllable(playerid, 1), ClearAnimations(playerid), DeletePVar(playerid, "IsTazed");
+
 
 forward RotateFerrisWheel();
 public RotateFerrisWheel()
@@ -4758,14 +5038,14 @@ public FixCarTimer(playerid)
 forward FuelTime();
 public FuelTime()
 {
-	for(new v = 1; v < MAX_VEHICLES; v++)
-	{
+	for(new v = 1; v < GetVehiclePoolSize(); v++)  
+	{ 
 		if(!NoEngine(v) && Veh[v][vAdd] != 0)
 		{
 			if(Engine[v] != false)//если двигатель у проверяемой машины работает
 			{
 				Veh[v][vFuel] -= 1;
-				SaveVeh();
+				SaveOneVeh(v);
 				
 				if(Veh[v][vFuel] <= 0)	
 					GetVehicleParamsEx(v,engine,lights,alarm,doors,bonnet,boot,objective),
