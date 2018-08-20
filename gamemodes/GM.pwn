@@ -92,6 +92,7 @@ main()
 #define COL_STATUS6 "{ff1010}"
 
 #define NALOG_BUYCAR 10
+#define NALOG_BUYSELLHOUSE 1
 
 #define CENA_BENZ 31
 #define CENA_WOOD 1
@@ -101,15 +102,6 @@ main()
 #define TIME_IDLE 300 // время для срабатывания рандомной анимации при стоянии
 #define TIME_VAULTDOORCLOSE 300
 
-#define KEYPAD_POLICE 1
-#define KEYPAD_POLICE2 2
-#define KEYPAD_BANKDOOR 3
-#define KEYPAD_BANKDOOR2 4
-#define KEYPAD_VAULTDOOR 5
-#define KEYPAD_VAULTGATE 6
-#define KEYPAD_FIREDOOR 7
-#define KEYPAD_FIREDOOR2 8
-#define KEYPAD_BANKDOOR3 9
 
 #define VBUYTOBUY 0
 #define VBUYTOCONGRESS 1
@@ -203,7 +195,7 @@ new
     PlayerText: fon_PTD[MAX_PLAYERS];  
 
 new drev = 0; // для системы дерева
-new kazna = 0; // для системы казны
+new purse = 0; // для системы казны
 
 new ActorWoodMan, ActorKapitoliyWomen, ActorAPPD, ActorRestaraunt, ActorZero, ActorHospital;
 
@@ -232,10 +224,10 @@ new IdleTime[MAX_PLAYERS]; // время стояния на месте
 new VaultDoorTime, LSPDGateTime, BankGateTime, CongressGateTime, FixGateTime, FixGate2Time; 
 // двери, ворота id
 new LSPDDoor, LSPDDoor2, BankGate, LSPDGate, BankDoor, BankDoor2, BankDoor3,
-VaultGate, VaultDoor, CongressGate, FixGate, FixGate2, FireDoor, FireDoor2;
+VaultGate, VaultDoor, CongressGate, FixGate, FixGate2, FireDoor, FireDoor2, AmbulanceDoor;
 // двери, ворота состояние
 new bool:LSPDDoorOpen, LSPDDoor2Open, BankDoorOpen, BankDoor2Open, BankDoor3Open, VaultDoorOpen, VaultGateOpen,
-LSPDGateOpen, BankGateOpen, CongressGateOpen, FixGateOpen, FixGate2Open, FireDoorOpen, FireDoor2Open;
+LSPDGateOpen, BankGateOpen, CongressGateOpen, FixGateOpen, FixGate2Open, FireDoorOpen, FireDoor2Open, AmbulanceDoorOpen;
 
 
 enum pInfo
@@ -284,7 +276,7 @@ enum vInfo
     Float:vVa,// Угол поворота A
     vColor,// Цвет 1
     vColor2,// Цвет 2
-    vOwner[32],//владелец
+    vOwner[24],//владелец
     vPrice,
     vBuy,
     vLock,
@@ -297,7 +289,7 @@ new LastCar;// Максимальное колличество авто
 enum HouseInfo//Naming the enum
 {
     hAdd,
-    hOwner[32], 
+    hOwner[24], 
     hPrice,
 	Float:hEnterX, 
     Float:hEnterY,
@@ -381,6 +373,12 @@ enum
 	DIALOG_ID_APPDWEAPON,
 	DIALOG_ID_ADMINMENU,
 	DIALOG_ID_ADMINMENUTPLIST,
+	DIALOG_ID_BUYSELLHOUSE,
+	DIALOG_ID_BUYHOUSE,
+	DIALOG_ID_BUYHOUSEACCEPT,
+	DIALOG_ID_SELLHOUSE,
+	DIALOG_ID_HOUSESETTINGS,
+	DIALOG_ID_HOUSEKNOCK,
 };
 #define DIALOG_TYPE_MAIN 20044
 #define D_S_M DIALOG_STYLE_MSGBOX 
@@ -389,6 +387,20 @@ enum
 #define D_S_P DIALOG_STYLE_PASSWORD 
 #define D_S_T DIALOG_STYLE_TABLIST 
 #define D_S_TH DIALOG_STYLE_TABLIST_HEADERS 
+
+enum
+{
+	KEYPAD_POLICE,
+	KEYPAD_POLICE2,
+	KEYPAD_BANKDOOR,
+	KEYPAD_BANKDOOR2,
+	KEYPAD_VAULTDOOR,
+	KEYPAD_VAULTGATE,
+	KEYPAD_FIREDOOR,
+	KEYPAD_FIREDOOR2,
+	KEYPAD_BANKDOOR3,
+	KEYPAD_AMBULANCEDOOR,
+};
 
 #if !defined BODY_PART_TORSO
 enum
@@ -441,7 +453,7 @@ new WoodRand[MAX_PLAYERS];
 public OnGameModeInit()
 {
     LoadWood();	
-	LoadKazna();
+	LoadPurse();
 	LoadHouses();
     ObjectLoad();
     LoadEnters();
@@ -491,7 +503,8 @@ public OnGameModeInit()
 	CreatePickupWith3DText(1275, 267.0403,118.3147,1004.6172, "Раздевалка\n>> Нажмите Y <<", 0, 4.0); 	
 	CreatePickupWith3DText(1275, 350.9631,188.9638,1019.9844, "Раздевалка\n>> Нажмите Y <<", 1, 4.0);
 	CreatePickupWith3DText(2061, 222.9965,79.8031,1005.0391, "Выдача оружия\n>> Нажмите Y <<", 0, 4.0);
-	
+	CreatePickupWith3DText(1273, 371.1688,187.4530,1014.1875, "Отдел по работе с недвижимостью\n>> Нажмите Y <<", 0, 5.0);
+		
 	
 	
 	LSPDDoor = CreateObject(1536,250.4500000,62.7500000,1002.6000000,0.0000000,0.0000000,90.0000000); //object(gen_doorext15) (3)
@@ -508,6 +521,7 @@ public OnGameModeInit()
 	FixGate2 = CreateObject(5020,-2388.2000000,-2180.8999000,34.0300000,0.0000000,0.0000000,274.7460000); //object(mul_las) (4)
 	FireDoor = CreateObject(1536,253.1000100,108.5800000,1002.2000000,0.0000000,0.0000000,90.0000000); //object(gen_doorext15) (12)
 	FireDoor2 = CreateObject(1536,239.7500000,118.0900000,1002.2000000,0.0000000,0.0000000,270.0000000); //object(gen_doorext15) (15)
+	AmbulanceDoor = CreateObject(1537,346.7000100,169.0000000,1019.0000000,0.0000000,0.0000000,270.0000000); //object(gen_doorext16) (1)
 	
     ActorWoodMan = CreateActor(161, -1629.7593,-2233.2476,31.4766,135.0107);
     ApplyActorAnimation(ActorWoodMan, "PED", "idlestance_old", 3.9, 1, 0, 0, 0, 0);
@@ -1316,6 +1330,18 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 			
 			ShowPlayerKeypad(playerid, KEYPAD_BANKDOOR3, szKey);
 		}
+		
+		if(IsPlayerInRangeOfPoint(playerid, 1.5, 346.4707,170.1382,1020.0643))
+		{
+			if(AmbulanceDoorOpen) 
+			return 	MoveObject (AmbulanceDoor, 346.7000100,169.0000000,1019.0000000, 0.01, 0.0000000,0.0000000,270.0000000), AmbulanceDoorOpen = false, 
+					GameTextForPlayer(playerid, FixText("~R~Дверь закрывается"), 1500, 3);
+			
+			new var = 1337;
+			new szKey[5]; valstr(szKey, var); 
+			
+			ShowPlayerKeypad(playerid, KEYPAD_AMBULANCEDOOR, szKey);
+		}
 
 	}
 	
@@ -1405,6 +1431,43 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 			return 1;
 		}
 		
+		if(IsPlayerInRangeOfPoint(playerid, 2.0, 371.1688,187.4530,1014.1875))
+		{			
+			static D40[] = 
+					"\t"COL_WHITE"Здравствуйте! У нас Вы можете купить себе дом и зарегистрировать его. \t\n\
+					\tТакже здесь Вы сможете выставить свой дом на продажу, если он у Вас имеется.\t\n\n\
+					\tЗа каждую совершенную операций мы берем комиссию в размере "COL_APED"%d %%.\t\n\n\
+					\t"COL_WHITE"Хотите купить себе дом или продать свой?\t\n";
+			new d40[sizeof(D40)];
+			
+			format(d40, sizeof(d40), D40, NALOG_BUYSELLHOUSE);
+			ShowPlayerDialog(playerid, DIALOG_ID_BUYSELLHOUSE, D_S_M,""COL_ORANGE"Отдел по работе с недвижимостью",d40,"Купить","Продать");
+			return 1;
+		}
+		
+		for(new i = 1; i < MAX_HOUSES;i++)
+		{
+	        if(		IsPlayerInRangeOfPoint(playerid, 1.5, House[i][hEnterX], House[i][hEnterY], House[i][hEnterZ])
+				||	(IsPlayerInRangeOfPoint(playerid, 1.5, House[i][hExitX], House[i][hExitY], House[i][hExitZ]) &&
+					GetPlayerVirtualWorld(playerid) == House[i][hVirt]))
+	        {				
+				if(PlayerInfo[playerid][pHouse] == i)
+				{
+					static D43[] = 
+							""COL_BLUE"Объект: \t"COL_WHITE"Состояние:"\
+							"\n"COL_BLUE"Дверь: \t%s";
+					new d43[sizeof(D43)+20],
+						status1[20];
+						
+					status1 = (House[i][hLock] == 0) ?  (""COL_STATUS1"Открыта") : (""COL_STATUS6"Закрыта");
+								
+					format(d43, sizeof(d43), D43, status1);
+					ShowPlayerDialog(playerid, DIALOG_ID_HOUSESETTINGS, D_S_TH,""COL_ORANGE"Настройки дома", d43, "Выбрать", "Назад");
+					return true; 	
+				}
+			}
+		}
+		
 		cmd::vmenu(playerid, "");
 	}
 	
@@ -1443,28 +1506,47 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	
     if (newkeys == KEY_WALK && !IsPlayerBlackScreen[playerid])
    	{
-    	for(new i = 0; i < MAX_HOUSES;i++)
+    	for(new i = 1; i < MAX_HOUSES;i++)
 		{
 	        if(IsPlayerInRangeOfPoint(playerid, 1.5, House[i][hEnterX],House[i][hEnterY],House[i][hEnterZ]))
 	        {
 				if(House[i][hOwned] == 0)
 				{
-				  	new str[128];
+				  	new string[140];
 					
-				  	format(str,128, ""COL_BLUE"Этот дом выставлен на продажу\nЦена: "COL_GREEN"%d $\n"COL_BLUE"Хотите ли вы осмотреть дом?\n",House[i][hPrice]);
-					ShowPlayerDialog(playerid, DIALOG_ID_HOUSEENTER, D_S_M,""COL_ORANGE"Покупка дома",str,"Да","Нет");
+				  	format(string, sizeof(string), ""COL_BLUE"Этот дом выставлен на продажу.\n\nID дома: "COL_WHITE"%d\n"COL_BLUE"Цена: "COL_GREEN"%d $\n\n"COL_BLUE"Хотите ли вы осмотреть дом?\n", i, House[i][hPrice]);
+					ShowPlayerDialog(playerid, DIALOG_ID_HOUSEENTER, D_S_M, ""COL_ORANGE"Покупка дома", string, "Да", "Нет");
 					
 					SetPVarInt(playerid, "HouseID", i);
 					return 1;
 				}
+				
+				if(PlayerInfo[playerid][pHouse] == i)
+				{
+					if(House[i][hLock] == 1) return SendClientMessage(playerid, COLOR_GREY, "Дверь закрыта.");
+				  	SetPlayerPosCW(playerid, House[i][hExitX], House[i][hExitY], House[i][hExitZ], House[i][hExitA],House[i][hInt], House[i][hVirt]);
+					ApplyAnimation(playerid, "PED", "Walk_Wuzi", 4.1, 0, 1, 1, 1, 0, 1);
+					return 1;
+				}
+				
+				if(PlayerInfo[playerid][pHouse] != i && House[i][hOwned] != 0)
+				{
+					if(House[i][hLock] == 1) return 
+					ShowPlayerDialog(playerid, DIALOG_ID_HOUSEKNOCK, D_S_M, ""COL_ORANGE"Постучаться домой",
+					""COL_WHITE"Дверь закрыта.\nВы хотите постучаться?\n", "Да", "Нет"), SetPVarInt(playerid, "HouseKnockID", i);
+					
+				  	SetPlayerPosCW(playerid, House[i][hExitX], House[i][hExitY], House[i][hExitZ], House[i][hExitA],House[i][hInt], House[i][hVirt]);
+					ApplyAnimation(playerid, "PED", "Walk_Wuzi", 4.1, 0, 1, 1, 1, 0, 1);
+					return 1;
+				}
 			}
 			if(IsPlayerInRangeOfPoint(playerid, 1.5, House[i][hExitX],House[i][hExitY],House[i][hExitZ])
-				&& GetPlayerVirtualWorld(playerid) == House[i][hVirt])
+			&& GetPlayerVirtualWorld(playerid) == House[i][hVirt])
 			{
-					ShowPlayerDialog(playerid, DIALOG_ID_HOUSEEXIT, D_S_M,""COL_ORANGE"Выход из дома",""COL_BLUE"Вы хотите выйти из дома?","Да","Нет");
+				ShowPlayerDialog(playerid, DIALOG_ID_HOUSEEXIT, D_S_M, ""COL_ORANGE"Выход из дома", ""COL_BLUE"Вы хотите выйти из дома?", "Да", "Нет");
 					
-					SetPVarInt(playerid, "HouseID", i);
-					return 1;
+				SetPVarInt(playerid, "HouseID", i);
+				return 1;
 			}
 		}
 		for(new i = 0; i < sizeof(EnterInfo); i++)
@@ -1472,14 +1554,12 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		    if(IsPlayerInRangeOfPoint(playerid, 1.0, EnterInfo[i][eEnterX], EnterInfo[i][eEnterY], EnterInfo[i][eEnterZ]))
 		    {
 		        SetPlayerPosCW(playerid, EnterInfo[i][eExitX], EnterInfo[i][eExitY], EnterInfo[i][eExitZ], EnterInfo[i][eExitA],EnterInfo[i][eExitInt],EnterInfo[i][eExitVirt]);
-				//ApplyAnimation(playerid, "PED", "Walk_Wuzi", 4.1, 0, 1, 1, 1, 0, 1);
 				ApplyAnimation(playerid, "CRIB", "CRIB_Use_Switch", 4.1, 0, 1, 1, 1, 0, 1);
 		        break;
 		    }
 		    else if(IsPlayerInRangeOfPoint(playerid, 1.0, EnterInfo[i][eExitX], EnterInfo[i][eExitY], EnterInfo[i][eExitZ]))
 		    {
 		        SetPlayerPosCW(playerid, EnterInfo[i][eEnterX], EnterInfo[i][eEnterY], EnterInfo[i][eEnterZ], EnterInfo[i][eEnterA],EnterInfo[i][eEnterInt], EnterInfo[i][eEnterVirt]);
-				//ApplyAnimation(playerid, "PED", "Walk_Wuzi", 4.1, 0, 1, 1, 1, 0, 1);
 				ApplyAnimation(playerid, "CRIB", "CRIB_Use_Switch", 4.1, 0, 1, 1, 1, 0, 1);
 		        break;
 		    }
@@ -1654,8 +1734,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				Delete3DTextLabel(Text3D:sellveh[car]);
 				
              	Veh[car][vBuy] = VBUYTOCARKEY;
-             	Veh[car][vLock] = 0;
-				strmid(Veh[car][vOwner], Name(playerid), 0, strlen(Name(playerid)), MAX_PLAYER_NAME+1);
+             	Veh[car][vLock] = false;
+				strmid(Veh[car][vOwner], Name(playerid), 0, strlen(Name(playerid)), MAX_PLAYER_NAME);
 				SaveOneVeh(car);
 				
              	PlayerInfo[playerid][pMoney] -= Veh[car][vPrice];
@@ -1821,9 +1901,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		case DIALOG_ID_HOUSEEXIT:
     	{
     		if(response) 
-			return	SetPlayerPosCW(playerid,House[GetPVarInt(playerid, "HouseID")][hEnterX],House[GetPVarInt(playerid, "HouseID")][hEnterY],
-					House[GetPVarInt(playerid, "HouseID")][hEnterZ], House[GetPVarInt(playerid, "HouseID")][hEnterA],0,0),
-					ApplyAnimation(playerid, "PED", "Walk_Wuzi", 4.1, 0, 1, 1, 1, 0, 1);
+			{
+				if(House[GetPVarInt(playerid, "HouseID")][hLock] == 1) return SendClientMessage(playerid, COLOR_GREY, "Дверь закрыта.");
+				SetPlayerPosCW(playerid,House[GetPVarInt(playerid, "HouseID")][hEnterX],House[GetPVarInt(playerid, "HouseID")][hEnterY],
+				House[GetPVarInt(playerid, "HouseID")][hEnterZ], House[GetPVarInt(playerid, "HouseID")][hEnterA],0,0),
+				ApplyAnimation(playerid, "PED", "Walk_Wuzi", 4.1, 0, 1, 1, 1, 0, 1);
+			}
 		}
 		
 		case DIALOG_ID_SETLEADER:
@@ -2385,11 +2468,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				strmid(Veh[carid][vOwner], "Angel Pine", 0, 10, 11);
 				Veh[carid][vPrice] = floatround(GetPVarInt(playerid, "PriceCar") * NALOG_BUYCAR / 100 + GetPVarInt(playerid, "PriceCar"), floatround_ceil);
 				
-				kazna += floatround(GetPVarInt(playerid, "PriceCar") * NALOG_BUYCAR / 100, floatround_ceil);
-				SaveKazna();
+				purse += floatround(GetPVarInt(playerid, "PriceCar") * NALOG_BUYCAR / 100, floatround_ceil);
+				SavePurse();
 				
 				Veh[carid][vBuy] = VBUYTOBUY;
-				Veh[carid][vLock] = 0;
+				Veh[carid][vLock] = false;
 				
 				PlayerInfo[playerid][pCarKey] = 0;
 				PlayerInfo[playerid][pMoney] = PlayerInfo[playerid][pMoney] + GetPVarInt(playerid, "PriceCar");
@@ -2595,6 +2678,201 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			return 1;
 		}
 		
+		case DIALOG_ID_BUYSELLHOUSE:
+		{
+			if(response)
+			{
+				if(PlayerInfo[playerid][pHouse] != 0) return ProxDetector(playerid, COLOR_PROX,
+				"Марта говорит: "COL_WHITE"В нашей базе данных есть сведения, что у Вас уже есть дом. Необходимо продать его, прежде чем покупать новый.", 10.0); 
+				
+				static const 	title[] = ""COL_WHITE"ID: \t"COL_WHITE"Стоимость: \n";
+								
+				new string[sizeof(title) + 15*MAX_HOUSES];
+				
+				string = title;
+				
+				for(new h = 1; h<MAX_HOUSES; h++)
+				{
+					if(House[h][hAdd] != 1 || House[h][hOwned] != 0) continue;
+					format(string, sizeof(string),"%s%i\t"COL_GREEN"%i\n", string, h, House[h][hPrice]);
+				}
+				
+				ShowPlayerDialog(playerid, DIALOG_ID_BUYHOUSE, D_S_TH, ""COL_ORANGE"Покупка дома", string, "Купить", "Выход");
+			}
+			else
+			{
+				new houseid = PlayerInfo[playerid][pHouse];
+				
+				if(houseid == 0) return ProxDetector(playerid, COLOR_PROX,
+				"Марта говорит: "COL_WHITE"В нашей базе данных нет сведений о Вашем доме.", 10.0);
+				
+				static D42[] = 
+					""COL_WHITE"Ваш № дома: "COL_APED"%d.\n\
+					"COL_WHITE"Его первоначальная стоимость: "COL_STATUS2"%d $\n\n\
+					"COL_WHITE"Выставив дом на продажу вы получите: "COL_GREEN"%d $\n\n\
+					"COL_WHITE"Вы уверены, что хотите продать его?";
+					
+				new d42[sizeof(D42)-2-2-2+10*2];
+			
+				format(d42, sizeof(d42), D42, houseid, House[houseid][hPrice], House[houseid][hPrice] / 2);
+				
+				ShowPlayerDialog(playerid, DIALOG_ID_SELLHOUSE, D_S_M, ""COL_ORANGE"Продажа дома", d42, "Да", "Нет");
+				
+             	
+				return 1;
+			}
+			return 1;
+		}
+		
+		case DIALOG_ID_SELLHOUSE:
+		{
+			if(response)
+			{				
+				new houseid = PlayerInfo[playerid][pHouse];
+				House[houseid][hOwned] = 0;
+             	House[houseid][hLock] = 0;
+				strmid(House[houseid][hOwner], "Angel Pine", 0, 10, 11);
+				SaveHouse();	
+				
+				purse -= House[houseid][hPrice]/2;
+				SavePurse();
+				
+             	PlayerInfo[playerid][pMoney] += House[houseid][hPrice]/2;
+				PlayerInfo[playerid][pHouse] = 0;
+				
+				GameTextForPlayer(playerid, FixText("~G~Дом продан"), 1500, 3);
+			}
+			else return ProxDetector(playerid, COLOR_PROX, 
+			"Марта говорит: "COL_WHITE"Приходите как надумаете продать свой дом.", 10.0);
+			
+			return 1;
+		}
+		
+		case DIALOG_ID_BUYHOUSE:
+		{
+			if(response)
+			{
+				if(PlayerInfo[playerid][pMoney] < House[listitem+1][hPrice])
+				{
+					static const 	title[] = ""COL_WHITE"ID: \t"COL_WHITE"Стоимость: \n";
+								
+					new string[sizeof(title) + 15*MAX_HOUSES];
+					
+					string = title;
+					
+					for(new h = 1; h<MAX_HOUSES; h++)
+					{
+						if(House[h][hAdd] != 1 || House[h][hOwned] != 0) continue;
+						format(string, sizeof(string),"%s%i\t"COL_GREEN"%i\n", string, h, House[h][hPrice]);
+					}
+					
+					ShowPlayerDialog(playerid, DIALOG_ID_BUYHOUSE, D_S_TH, ""COL_ORANGE"Покупка дома", string, "Купить", "Выход");
+					
+					ProxDetector(playerid, COLOR_PROX, "Марта говорит: "COL_WHITE"У Вас недостаточно денег для покупки этого дома!", 10.0);
+					return 1;
+				}
+				
+				static D41[] = 
+					""COL_WHITE"Вы выбрали дом № "COL_APED"%d.\n\
+					"COL_WHITE"Стоимость дома - "COL_GREEN"%d $\n\
+					"COL_WHITE"Хотите купить его и зарегистрировать на себя?";
+					
+				new d41[sizeof(D41)-2-2+10];
+			
+				format(d41, sizeof(d41), D41, listitem+1, House[listitem+1][hPrice]);
+				
+				ShowPlayerDialog(playerid, DIALOG_ID_BUYHOUSEACCEPT, D_S_M, ""COL_ORANGE"Покупка дома", d41, "Да", "Нет");
+				
+				SetPVarInt(playerid, "BuyHouseID", listitem+1);
+			}
+			else return ProxDetector(playerid, COLOR_PROX, 
+			"Марта говорит: "COL_WHITE"У нас дома раскупают как горячие пирожки, так что не медлите с покупкой!", 10.0);
+			return 1;
+		}
+		
+		case DIALOG_ID_BUYHOUSEACCEPT:
+		{
+			if(response)
+			{
+				new houseid = GetPVarInt(playerid, "BuyHouseID");
+				
+				PlayerInfo[playerid][pHouse] = houseid;
+				
+             	House[houseid][hOwned] = 1;
+             	House[houseid][hLock] = 1;
+				strmid(House[houseid][hOwner], Name(playerid), 0, strlen(Name(playerid)), MAX_PLAYER_NAME);
+				SaveHouse();
+				
+				purse += House[houseid][hPrice];
+				SavePurse();
+				
+             	PlayerInfo[playerid][pMoney] -= House[houseid][hPrice];
+				             	
+             	GameTextForPlayer(playerid, FixText("~G~Поздравляем с покупкой"), 1500, 3);
+				
+				DeletePVar(playerid, "BuyHouseID");
+			}
+			else
+			{
+				DeletePVar(playerid, "BuyHouseID");
+				
+				static const 	title[] = ""COL_WHITE"ID: \t"COL_WHITE"Стоимость: \n";
+								
+				new string[sizeof(title) + 15*MAX_HOUSES];
+				
+				string = title;
+				
+				for(new h = 1; h<MAX_HOUSES; h++)
+				{
+					if(House[h][hAdd] != 1) continue;
+					format(string, sizeof(string),"%s%i\t"COL_GREEN"%i\n", string, h, House[h][hPrice]);
+				}
+				
+				ShowPlayerDialog(playerid, DIALOG_ID_BUYHOUSE, D_S_TH, ""COL_ORANGE"Покупка дома", string, "Купить", "Выход");
+			}
+			return 1;
+		}
+		
+		case DIALOG_ID_HOUSESETTINGS:
+		{
+			if(response)
+			{
+				new houseid = PlayerInfo[playerid][pHouse];
+				
+             	House[houseid][hLock] = (!House[houseid][hLock]) ? 1 : 0;
+				
+             	GameTextForPlayer(playerid, (House[houseid][hLock] == 1) ? 
+				FixText("~R~Дверь закрыта") : FixText("~G~Дверь открыта"), 1500, 3);
+				return 1;
+			}
+		}
+		
+		case DIALOG_ID_HOUSEKNOCK:
+		{
+			if(response)
+			{
+				new houseid = GetPVarInt(playerid, "HouseKnockID"),
+					string[MAX_PLAYER_NAME+18-2];
+		
+				format(string,sizeof(string),"%s стучит в дверь.",Name(playerid));
+				ProxDetector(playerid,COLOR_PROX, string, 10.0);
+				
+             	GameTextForPlayer(playerid, FixText("~G~*Стук в дверь*"), 1500, 3);
+				
+				foreach(Player, i)
+				{
+					if(IsPlayerInRangeOfPoint(i, 20.0, House[houseid][hExitX], House[houseid][hExitY], House[houseid][hExitZ]) &&
+					GetPlayerVirtualWorld(i) == House[houseid][hVirt])
+					{
+						SendClientMessage(i, COLOR_PROX, "Кто-то постучал в дверь.");
+						GameTextForPlayer(i, FixText("~G~*Стук в дверь*"), 1500, 3);
+					}
+				}
+				return 1;
+			}
+		}
+		
+		
 	}
 	return 1;
 }
@@ -2701,6 +2979,13 @@ public OnPlayerKeypadInput(playerid, keypadID, type, key) // 'key' contains the 
 		GameTextForPlayer(playerid, FixText("~G~Дверь открывается"), 1500, 3);
 		MoveObject (BankDoor3, 2149.8301000,1603.5996000,1002.3000000+0.01, 0.01, 0.0000000,0.0000000,179.9950000);	
 		BankDoor3Open = true;	
+	}
+	
+	if(keypadID == KEYPAD_AMBULANCEDOOR && type == KEYPAD_INPUT_GOOD)
+	{
+		GameTextForPlayer(playerid, FixText("~G~Дверь открывается"), 1500, 3);
+		MoveObject (AmbulanceDoor, 346.7002000,169.0000000,1019.0000000+0.01, 0.01, 0.0000000,0.0000000,180.0000000);	
+		AmbulanceDoorOpen = true;	
 	}
 	
 	if(keypadID == KEYPAD_VAULTDOOR && type == KEYPAD_INPUT_GOOD)
@@ -2844,7 +3129,7 @@ CMD:cveh(playerid, params[])
     GetPlayerFacingAngle(playerid,a);// Узнаём угол поворота игрока
     LastCar++;// Прибавляем к последней добавленной машине одну
 	
-    Veh[LastCar][vAdd] = 1;// Устанавливаем проверку на созданную машину
+    Veh[LastCar][vAdd] = true;// Устанавливаем проверку на созданную машину
     Veh[LastCar][vModel] = params[0];// Устанавливаем модель машине
     Veh[LastCar][vVx] = x;// Устанавливаем позицию
     Veh[LastCar][vVy] = y;// Устанавливаем позицию
@@ -2855,7 +3140,7 @@ CMD:cveh(playerid, params[])
     strmid(Veh[LastCar][vOwner], "Angel Pine", 0, 10, 11);
     Veh[LastCar][vPrice] = params[3];
     Veh[LastCar][vBuy] = VBUYTOSELL;
-    Veh[LastCar][vLock] = 0;
+    Veh[LastCar][vLock] = false;
     Veh[LastCar][vFuel] = 100;
 	
     CreateVehicle(Veh[LastCar][vModel],Veh[LastCar][vVx]+2,Veh[LastCar][vVy]+2,Veh[LastCar][vVz]+1,Veh[LastCar][vVa],Veh[LastCar][vColor],Veh[LastCar][vColor2],60000);//
@@ -3379,7 +3664,7 @@ CMD:chouse1(playerid, params[])
     House[LastHouse][hEnterA] = a;
     House[LastHouse][hEnterX] = x;
     House[LastHouse][hPrice] = params[0];
-    strmid(House[LastHouse][hOwner], "Angel Pine", 0, 11, 999);
+    strmid(House[LastHouse][hOwner], "Angel Pine", 0, 10, 11);
 	
     HouseEnter[LastHouse] = CreatePickup(1273, 23, x, y, z, 0);
 	
@@ -3401,9 +3686,9 @@ CMD:chouse2(playerid, params[])
     House[LastHouse][hExitA] = a;
     House[LastHouse][hInt] = GetPlayerInterior(playerid);
     House[LastHouse][hVirt] = LastHouse;
-    House[LastHouse][hOwned] = 0;
-    House[LastHouse][hLock] = 0;
-    House[LastHouse][hAdd] = 1;
+    House[LastHouse][hOwned] = false;
+    House[LastHouse][hLock] = false;
+    House[LastHouse][hAdd] = true;
 	
     HouseExit[LastHouse] = CreatePickup(1273, 23, x, y, z, LastHouse);
 	
@@ -3768,7 +4053,7 @@ LoadHouses()
             House[h][hAdd] = strval(arrCoords[0]);// Загружаем проверку на созданую машину
             if(House[h][hAdd] != 0)// Если машина создана, то..
             {
-                strmid(House[h][hOwner], arrCoords[1], 0, strlen(arrCoords[1]), MAX_PLAYER_NAME+1);// Загружаем модель
+                strmid(House[h][hOwner], arrCoords[1], 0, strlen(arrCoords[1]), MAX_PLAYER_NAME);// Загружаем модель
                 House[h][hPrice] = strval(arrCoords[2]);// Загружаем позицию
                 House[h][hEnterX] = floatstr(arrCoords[3]);// Загружаем позицию
                 House[h][hEnterY] = floatstr(arrCoords[4]);// Загружаем позицию
@@ -3902,7 +4187,7 @@ LoadVeh()
                 Veh[v][vVa] = floatstr(arrCoords[5]);// Загружаем угол поворота
                 Veh[v][vColor] = strval(arrCoords[6]);// Загружаем цвет
                 Veh[v][vColor2] = strval(arrCoords[7]);// Загружаем второй цвет
-                strmid(Veh[v][vOwner], arrCoords[8], 1, strlen(arrCoords[8]), MAX_PLAYER_NAME+1);
+                strmid(Veh[v][vOwner], arrCoords[8], 1, strlen(arrCoords[8]), MAX_PLAYER_NAME);
                 Veh[v][vPrice] = strval(arrCoords[9]);
                 Veh[v][vBuy] = strval(arrCoords[10]);
                 Veh[v][vLock] = strval(arrCoords[11]);
@@ -4000,22 +4285,22 @@ LoadWood()
   	return true;
 }
 
-SaveKazna()
+SavePurse()
 {
-	new iniFile = ini_openFile("Kazna.ini");
- 	ini_setInteger(iniFile,"Kazna",kazna);
+	new iniFile = ini_openFile("Purse.ini");
+ 	ini_setInteger(iniFile,"Purse", purse);
  	ini_closeFile(iniFile);
 	return true;
 }
 
-LoadKazna()
+LoadPurse()
 {
-	new iniFile = ini_openFile("Kazna.ini");
- 	ini_getInteger(iniFile,"Kazna",kazna);
+	new iniFile = ini_openFile("Purse.ini");
+ 	ini_getInteger(iniFile,"Purse",purse);
   	ini_closeFile(iniFile);
   	return true;
 }
-
+	
 WriteLog(namelog[],string[])
 {
     new text[256],log[50],computation1, computation2, computation3,File:LogFile,i;
@@ -4061,18 +4346,6 @@ split(const strsrc[], strdest[][], delimiter)
     }
     return 1;
 }
-
-/*ProxDetector(playerid,color,msg[],Float:radius)
-{
-	new Float:x,Float:y,Float:z;
-	GetPlayerPos(playerid,x,y,z);
-	foreach(Player, i)
-	{
-		if(IsPlayerInRangeOfPoint(i,radius,x,y,z) && GetPlayerVirtualWorld(i) == GetPlayerVirtualWorld(playerid))
-		SendClientMessage(i,color,msg);    
-	}
-	return 1;
-}*/
 
 ProxDetector(playerid, color, string[], Float:max_range, Float:max_ratio = 1.6)
 {
@@ -4120,6 +4393,7 @@ ProxDetector(playerid, color, string[], Float:max_range, Float:max_ratio = 1.6)
     SendClientMessage(playerid, color, string);
     return 1;
 }
+
 
 GetAroundPlayerVehicleID(playerid, Float:radius)
 {
@@ -4328,9 +4602,10 @@ ShowPlayerPlayerInfoDialog(playerid)
 			"\n\t"\
 			"\n"COL_BLUE"Наличные: \t"COL_GREEN"%d $"\
 			"\n"COL_BLUE"Ключи от автомобиля №: \t %s"\
+			"\n"COL_BLUE"Ключи от дома №: \t %s"\
 			"\n"COL_BLUE"Организация: \t%s";
 			
-	new d35[24+26+35+38+38+28 + 10 + MAX_FRACTION_NAME_LENGTH +37+39+24],
+	new d35[24+26+35+38+38+28 + 10 + MAX_FRACTION_NAME_LENGTH +37+39+24+33],
 		d36[69-6+4],
 		hunger[37],
 		endurance[39],
@@ -4339,7 +4614,8 @@ ShowPlayerPlayerInfoDialog(playerid)
 		carkey[4],
 		org[MAX_FRACTION_NAME_LENGTH],
 		Float:health,
-		Float:battery;
+		Float:battery,
+		house[4];
 		
     GetPlayerHealth(playerid,health);
 	
@@ -4348,9 +4624,14 @@ ShowPlayerPlayerInfoDialog(playerid)
 	money = PlayerInfo[playerid][pMoney];
 	
 	if(PlayerInfo[playerid][pCarKey] > 0)
-		valstr(carkey,PlayerInfo[playerid][pCarKey]);
+		valstr(carkey, PlayerInfo[playerid][pCarKey]);
 	else
 		carkey = " ";
+	
+	if(PlayerInfo[playerid][pHouse] > 0)
+		valstr(house, PlayerInfo[playerid][pHouse]);
+	else
+		house = " ";
 	
 	if(PlayerInfo[playerid][pMember] > 0)
 		org = fraction_name[PlayerInfo[playerid][pMember]];
@@ -4379,7 +4660,7 @@ ShowPlayerPlayerInfoDialog(playerid)
 	if(14400 < PlayerInfo[playerid][pEndurance] <=18000) endurance = ""COL_STATUS2"Нужно немного расслабиться";
 	if(18000 < PlayerInfo[playerid][pEndurance] <=25200) endurance = ""COL_STATUS1"Полон сил";
 				
-	format(d35, sizeof(d35), D35, hunger, endurance, healths, money, carkey, org);
+	format(d35, sizeof(d35), D35, hunger, endurance, healths, money, carkey, house, org);
 	format(d36, sizeof(d36), D36, battery);
 	ShowPlayerDialog(playerid, DIALOG_ID_PLAYERINFODIALOG, D_S_T, d36, d35, "Выйти", "Назад");
 	return true;
